@@ -38,13 +38,13 @@ build:
  cc -g -DGNU_RUNTIME -c -o $target -Wno-import \
   -I. \
   -I/usr/GNUstep/System/Headers/gnustep/ \
-  -I/usr/GNUstep/System/Headers/ix86/linux-gnu/ \
+  -I/usr/GNUstep/System/Headers/$GNUSTEP_HOST_CPU/$GNUSTEP_HOST_OS/ \
   $i 
 done:
 end
 
 cc -g -o nfmake_boot obj/*.o \
-  -L/usr/GNUstep/System/Libraries/ix86/linux-gnu/gnu-gnu-gnu-xgps/ \
+  -L/usr/GNUstep/System/Libraries/$GNUSTEP_HOST_CPU/$GNUSTEP_HOST_OS/$LIBRARY_COMBO \
   -lgnustep-base \
   -lobjc \
   -lpthread

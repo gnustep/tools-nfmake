@@ -103,7 +103,11 @@
     [arguments addObjectsFromArray:[self cFlagArray]];
     [arguments addObject:@"-Wall"];
     [arguments addObject:@"-DNFOX_LINUX"];
+#ifdef __BIG_ENDIAN__
+    [arguments addObject:@"-D__BIG_ENDIAN__"];
+#else
     [arguments addObject:@"-D__LITTLE_ENDIAN__"];
+#endif
     [arguments addObject:@"-DGNU_RUNTIME"];
     [arguments addObject:@"-g"];
     [arguments addObject:@"-c"];
