@@ -130,7 +130,7 @@
   [aTask setArguments:arguments];
   [aTask setEnvironment:[self subTaskEnvironment]];
   [aTask launch];
-  sleep (30);
+  //sleep (30);
   [aTask waitUntilExit];
   if ([aTask terminationStatus]!=0) {
     fprintf(stderr,"Abort\n");
@@ -160,7 +160,7 @@
   [aTask setArguments:arguments];
   [aTask setEnvironment:[self subTaskEnvironment]];
   [aTask launch];
-  sleep (30);
+  //sleep (30);
   [aTask waitUntilExit];
   if ([aTask terminationStatus]!=0) {
     fprintf(stderr,"Abort\n");

@@ -79,7 +79,7 @@ return [[self buildComponentDirectory] stringByAppendingPathComponent:[self comp
   [aTask setArguments:arguments];
 //NSLog(@"%@",arguments);
   [aTask launch];
-  sleep(30);
+  //sleep(30);
   [aTask waitUntilExit];
   if ([aTask terminationStatus]!=0) {
     fprintf(stderr,"Abort\n");

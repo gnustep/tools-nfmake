@@ -75,14 +75,16 @@
   id subProjectList=[self subProjects];
   id theMan = [NSFileManager defaultManager];
 
-  [self installHeaders];
   if (subProjectList && [subProjectList count]) {
     id theEnum = [subProjectList objectEnumerator];
     id subProject;
 
     while ((subProject= [theEnum nextObject])) {
-      [theMan changeCurrentDirectoryPath:[subProject baseDirectoryPath]];
-      [subProject makeTarget:target];
+      if ( [theMan changeCurrentDirectoryPath:[subProject baseDirectoryPath]]) {
+        [subProject makeTarget:target];
+      } else {
+        NSLog(@"Can't build subproject %@, directory missing",[subProject baseDirectoryPath]);
+      }
     }
     [theMan changeCurrentDirectoryPath:[self baseDirectoryPath]];
   }
@@ -123,7 +125,7 @@
     [arguments addObject:[NSString stringWithFormat:@"-I%@",[self projectHeaderPath]]];
     // this is all the system paths
     [arguments addObjectsFromArray:[self headerDirectoryFlags]];
-#define BAD_GCC
+//#define BAD_GCC
 #ifdef BAD_GCC
 // The gnu runtime requires that every linked Objective-C file have a unique path when compiled
 // (I'm not kidding -K2 12/19/99)
@@ -137,7 +139,7 @@
     [aTask setLaunchPath:@"gcc"];
     [aTask setArguments:arguments];
     [aTask launch];
-    sleep(30);
+    //sleep(1);
     [aTask waitUntilExit];
     if ([aTask terminationStatus]!=0) {
       fprintf(stderr,"Abort (%d)\n",[aTask terminationStatus]);

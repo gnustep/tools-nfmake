@@ -88,7 +88,7 @@
   [aTask setEnvironment:[self subTaskEnvironment]];
 //  fprintf(stdout,"%s\n",[[arguments description] cString]); fflush(stdout);
   [aTask launch];
-  sleep (30);
+  //sleep (30);
   [aTask waitUntilExit];
   if ([aTask terminationStatus]!=0) {
     fprintf(stderr,"Abort\n");

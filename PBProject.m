@@ -70,6 +70,19 @@
   parentProject = [aProject retain];
   [parentProject addChild:self];
 }
+- (PBProject *)parentProject;
+{
+  return parentProject;
+}
+
+- (PBProject *)baseProject;
+{
+  PBProject *baseProject = self;
+  while ([baseProject parentProject]) {
+    baseProject = [baseProject parentProject];
+  }
+  return baseProject;
+}
 
 // aDict is the actual contents of PB.project
 -(void)setDictionary:(NSDictionary *)aDict;
@@ -190,9 +203,12 @@
 
       while ((directoryName= [theEnum nextObject])) {
         PBProject *subProject;
-        [theMan changeCurrentDirectoryPath:directoryName];
-        subProject=[PBProject parse:@"PB.project"];
-        [subProject setParentProject:self];
+        if ([theMan changeCurrentDirectoryPath:directoryName]) {
+	        subProject=[PBProject parse:@"PB.project"];
+	        [subProject setParentProject:self];
+	      } else {
+	        NSLog(@"Can't build subproject %@, directory missing",directoryName);
+	      }
         [theMan changeCurrentDirectoryPath:parentDirectory];
       }
 
@@ -446,7 +462,14 @@
   id pathParts = [thePathList componentsSeparatedByString:@":"];
   id theMan = [NSFileManager defaultManager];
   NSMutableArray *outArray = [NSMutableArray array];
-  int x = [pathParts count];
+  int x;
+
+  pathParts=[pathParts mutableCopy];
+  [pathParts autorelease];
+  if ([initialDictionary objectForKey:@"OTHER_LIB_DIR"]) {
+	  [pathParts addObjectsFromArray:[initialDictionary objectForKey:@"OTHER_LIB_DIR"]];
+  }
+  x= [pathParts count];
   while (x--) {
     NSString *theDir = [pathParts objectAtIndex:x];
     BOOL isDir;
@@ -482,6 +505,11 @@
   [potentialArray addObject:[[baseDict objectForKey:@"GNUSTEP_BUILD_ROOT"] stringByAppendingPathComponent:@"Headers"]];
   [potentialArray addObject:[[baseDict objectForKey:@"GNUSTEP_BUILD_ROOT"] stringByAppendingPathComponent:@"Headers/gnustep"]];
   [potentialArray addObject:[[baseDict objectForKey:@"GNUSTEP_BUILD_ROOT"] stringByAppendingPathComponent:hostPath]];
+
+  if ([initialDictionary objectForKey:@"OTHER_HEADER_DIR"]) {
+	  [potentialArray addObjectsFromArray:[initialDictionary objectForKey:@"OTHER_HEADER_DIR"]];
+  }
+
 
   
   x = [potentialArray count];

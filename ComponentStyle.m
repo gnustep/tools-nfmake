@@ -36,9 +36,19 @@
   return NO;
 }
 
+- (NSString *)pathFromBase;
+{
+  NSString *myPath = [self baseDirectoryPath];
+  NSString *basePath=[[self baseProject] baseDirectoryPath];
+  if ([myPath hasPrefix:basePath]) {
+   myPath=[myPath substringFromIndex:[basePath length]+1];
+  }
+  return myPath;
+}
+
 -(void)makeTarget:(NSString *)targetName;
 {
-  fprintf(stdout,"===subproject %s\n",[[self executablePath] cString]);
+  fprintf(stdout,"===subproject %s\n",[[self pathFromBase] cString]);
   fflush(stdout);
   if ([targetName isEqualToString:@"InstallHeaders"]) {
     [self installHeaders];
@@ -49,7 +59,6 @@
   } else {
     [super makeTarget:targetName];
   }
-
 }
 
 @end

@@ -81,5 +81,7 @@
 - (NSString *)installRoot; /// the root of where to install finished products if none is speced
 - (NSString *)installDirectory;
 
+- (PBProject *)parentProject;
+- (PBProject *)baseProject;
 
 @end
