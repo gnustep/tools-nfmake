@@ -1,0 +1,12 @@
+#1 Lots more documentation:
+   about the plist format and the PB.project format, for those not coming from OpenStep
+   about what project types are supported, and what commands (ie clean/install)
+   about how resources are installed for tools
+
+
+#2  This was written for my machine, and the machine of others at nfox.com.  We all use an identical build environment, and it probably isn't the same as everyone elses :-)  (For the record, RedHat 6.1, with gcc 2.8.1 (modified), with ld 2.9.1 (modified), with pthreads and the multi-threaded objc (modified), using gnu-gnu-gnu-xgps)  This originally compiled and worked on OSXServer, Yellow Box, Solaris, and GNUstep.  We only use GNUstep in house now, so I no longer actively support it for the Apple platforms.
+
+#3 much better support for nfmakerc.  The goal is for you to be able to define standard options for a machine (such as what libraries to link against), but be able to override them per user, per project, or per build.
+
+
+

@@ -1,0 +1,39 @@
+2000-03-09  Karl Kraft <karl@nfox.com>
+        Initial checkin to GNUstep CVS server.  Previously hosted on develop.nfox.com.  ChangeLog entries below this one are extracted from CVS checkin log messages
+
+2000-03-01  Karl Kraft <karl@nfox.com>
+        updateFiles: is now better about how it copies directories, and prep_gswc now works with mutliple levels of subprojects
+
+2000-02-23  Karl Kraft <karl@nfox.com>
+        Added support for compilation with the threaded version of libobjc. Added support for building GSWeb based WebObjects applications
+
+2000-01-14  Karl Kraft <karl@nfox.com>
+        Added support for tools and applications with resources
+
+2000-01-13  Karl Kraft <karl@nfox.com>
+        Builds GUI applications correctly.
+        Added support for nfmakerc
+
+2000-01-11  Karl Kraft <karl@nfox.com>
+        Sends status message to stdout, and error message to stderr
+
+2000-01-10  Karl Kraft <karl@nfox.com>
+        Added support for calling any arbitrary methodName in the builder from the command line.  This can be used to determine things like the install location, or executable path.
+        
+1999-12-22  Karl Kraft <karl@nfox.com>
+        sleep() calls inserted to avoid a problem with NSTask
+
+1999-12-20  Karl Kraft <karl@nfox.com>
+        Fixed to build bundles and frameworks on linux
+
+1999-10-09  Karl Kraft <karl@nfox.com>
+        Supports loadable bundles, other misc support for linux
+        
+1999-09-29  Karl Kraft <karl@nfox.com>
+        Added support for building subprojects, works with linux
+
+1999-09-14  Karl Kraft <karl@nfox.com>
+        nfmake now manages to build itself.
+
+1999-09-03  Karl Kraft <karl@nfox.com>
+        Created as a portable project to read and build from PB.project files on all four supported platforms (OSX/Yellow Box/PDO-Solaris/GNUstep)
