@@ -25,49 +25,62 @@
 #import "MakeStyle.h"
 #import "PBProject.h"
 
-
 int main (int argc, const char *argv[])
 {
-  NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
   id selfProcess = [NSProcessInfo processInfo];
-  MakeStyle *theProject=[MakeStyle parse:@"PB.project"];
+  MakeStyle *theProject = [MakeStyle parse: @"PB.project"];
   //id theMan = [NSFileManager defaultManager];
-  NSString *projectStyle=nil;
+  NSString *projectStyle = nil;
 
-  if (!theProject) {
-    fprintf(stderr,"Could not parse PB.project file\n");
-    exit (-1);
-  }
-
-  if ([[selfProcess arguments] count]>1){
-    projectStyle=[[selfProcess arguments] objectAtIndex:1];
-  }
-
-  if ([projectStyle characterAtIndex:0] == '-') {
-	  NSString *query = [projectStyle stringWithoutPrefix:@"-"];
-	  SEL theSelector = NSSelectorFromString(query);
-	  id response=@"";
-	  if (theSelector && [theProject respondsToSelector:theSelector]) {
-	     response = [theProject performSelector:theSelector];
-	  }
-	  if ([response isKindOfClass:[NSArray class]]) {
-		  int x;
-		  for (x=0; x< [response count]; x++) {
-			  fprintf(stdout,"%s\n",[[response objectAtIndex:x] lossyCString] );
-		  }
-	  } 
-	  if ([response isKindOfClass:[NSString class]]) {
-	  fprintf(stdout,"%s",[response lossyCString] );
-	  } 
-  } else {
-    if (!projectStyle) {
-      [theProject makeTarget:@"default"];
-    } else {
-      [theProject makeTarget:projectStyle];
+  if (!theProject) 
+    {
+      NSLog(@"Could not parse PB.project file\n");
+      return -1;
     }
-  }
 
-  [pool release];
-  exit(0);       // insure the process exit status is 0
-  return 0;      // ...and make main fit the ANSI spec.
+  if ([[selfProcess arguments] count] > 1)
+    {
+      projectStyle = [[selfProcess arguments] objectAtIndex: 1];
+    }
+
+  if ([projectStyle characterAtIndex: 0] == '-') 
+    {
+      NSString *query = [projectStyle substringFromIndex: 1];
+      SEL theSelector = NSSelectorFromString(query);
+      id response = @"";
+
+      if (theSelector && [theProject respondsToSelector: theSelector]) 
+        {
+	  response = [theProject performSelector: theSelector];
+	}
+      if ([response isKindOfClass: [NSArray class]]) 
+        {
+	  int x;
+
+	  for (x = 0; x < [response count]; x++) 
+	    {
+	      NSLog(@"%@\n", [response objectAtIndex: x]);
+	    }
+	} 
+      if ([response isKindOfClass: [NSString class]]) 
+        {
+	  NSLog(@"%@", response);
+	} 
+    } 
+  else 
+    {
+      if (projectStyle == nil) 
+        {
+//	    NSLog(@"making default %@\n", [theProject description]);
+	  [theProject makeTarget: @"default"];
+	} 
+      else 
+        {
+	  [theProject makeTarget: projectStyle];
+	}
+    }
+  
+  RELEASE(pool);
+  return 0;
 }

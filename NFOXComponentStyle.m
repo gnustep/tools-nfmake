@@ -26,32 +26,40 @@
 #import "NSFileManager_CompareFiles.h"
 
 @implementation NFOXComponentStyle
-+(BOOL)buildsType:(NSString *)aType;
+
++(BOOL)buildsType:(NSString *)aType
 {
-  if ([aType isEqualToString:@"NFOXComponent"]) {
-    return YES;
-  }
+  if ([aType isEqualToString:@"NFOXComponent"]) 
+    {
+      return YES;
+    }
   return NO;
 }
 
-- (NSString *)componentName;
+- (NSString *)componentName
 {
   NSString *extension = [self buildExtension];
-  if (extension) {
-    return [NSString stringWithFormat:@"%@.%@",
-             [self projectName],extension];
-  } else {
-    return [NSString stringWithFormat:@"%@.build",
-	   [self projectName]];
-  }
+
+  if (extension) 
+    {
+      return [NSString stringWithFormat: @"%@.%@",
+	       [self projectName], extension];
+    } 
+  else 
+    {
+      return [NSString stringWithFormat: @"%@.build",
+	       [self projectName]];
+    }
 }
--(NSString *)componentPath;   // where the component is assembled
+
+// where the component is assembled
+-(NSString *)componentPath
 {
-return [[self buildComponentDirectory] stringByAppendingPathComponent:[self componentName]];
+  return [[self buildComponentDirectory] stringByAppendingPathComponent:
+	    [self componentName]];
 }
 
-
--(void)linkFinalProduct;
+-(void)linkFinalProduct
 {
   NSTask *aTask = [[[NSTask alloc] init] autorelease];
   NSMutableArray *arguments= [NSMutableArray array];
@@ -59,11 +67,11 @@ return [[self buildComponentDirectory] stringByAppendingPathComponent:[self comp
 
   if ([[NSFileManager defaultManager] file:[self executablePath] isOlderThanFiles:[self linkables]]==NO) {
 
-//    fprintf(stdout,"up to date\n");
+//    NSLog(@"up to date\n");
     return;
   }
 
-  fprintf(stdout,"Linking %s\n",[[self executablePath] cString]); fflush(stdout);
+  NSLog(@"Linking %@\n", [self executablePath]);
 
   //[arguments addObject:@"-v"];
   [arguments addObjectsFromArray:[self cFlagArray]];
@@ -97,40 +105,42 @@ return [[self buildComponentDirectory] stringByAppendingPathComponent:[self comp
 
 }
 
--(void)installBundle;
+-(void)installBundle
 {
   NSFileManager *theMan=[NSFileManager defaultManager];
   NSString *installDirectory=[self installDirectory];
 
-  if (!installDirectory) {
-    //NSLog(@"no INSTALLDIR set using /usr/GNUstep/Local/Components");
-    installDirectory = @"/usr/GNUstep/Local/Components";
-  }
+  if (!installDirectory) 
+    {
+      //NSLog(@"no INSTALLDIR set using /usr/GNUstep/Local/Components");
+      installDirectory = @"/usr/GNUstep/Local/Components";
+    }
 
- // fprintf(stdout,"Installing to %s\n",[installDirectory cString]);
-  [theMan installFromPath:[self componentPath] 
-                    toDir:installDirectory
-        operationDelegate:[self copyDelegate]];
-
+  // NSLog(@"Installing to %@\n", installDirectory);
+  [theMan installFromPath: [self componentPath] 
+                    toDir: installDirectory
+        operationDelegate: [self copyDelegate]];
 }
 
-
--(void)makeTarget:(NSString *)targetName;
+-(void)makeTarget: (NSString *)targetName;
 {
-  if ([targetName isEqualToString:@"default"]) {
-    [self buildSubprojects:targetName];
-    [self buildClasses];
-    [self installHeaders];
-    [self installResources];
-    [self linkFinalProduct];
-  } else  if ([targetName isEqualToString:@"install"]) {
-    [self makeTarget:@"default"];
-    [self installBundle];
-  } else {
-    [super makeTarget:targetName];
-  }
+  if ([targetName isEqualToString: @"default"]) 
+    {
+      [self buildSubprojects: targetName];
+      [self buildClasses];
+      [self installHeaders];
+      [self installResources];
+      [self linkFinalProduct];
+    } 
+  else if ([targetName isEqualToString: @"install"]) 
+    {
+      [self makeTarget: @"default"];
+      [self installBundle];
+    } 
+  else 
+    {
+      [super makeTarget: targetName];
+    }
 }
-
-
 
 @end

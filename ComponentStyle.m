@@ -24,41 +24,50 @@
 #import "ComponentStyle.h"
 
 @implementation ComponentStyle
-+(BOOL)buildsType:(NSString *)aType;
+
++(BOOL)buildsType: (NSString *)aType
 {
-  if ([aType isEqualToString:@"Component"]) {
-    return YES;
-  }
-// this was the name used in an earlier version of Rhapsody
-  if ([aType isEqualToString:@"Subproject"]) {
-    return YES;
-  }
+  if ([aType isEqualToString: @"Component"]) 
+    {
+      return YES;
+    }
+  // this was the name used in an earlier version of Rhapsody
+  if ([aType isEqualToString: @"Subproject"]) 
+    {
+      return YES;
+    }
   return NO;
 }
 
-- (NSString *)pathFromBase;
+- (NSString *)pathFromBase
 {
   NSString *myPath = [self baseDirectoryPath];
-  NSString *basePath=[[self baseProject] baseDirectoryPath];
-  if ([myPath hasPrefix:basePath]) {
-   myPath=[myPath substringFromIndex:[basePath length]+1];
-  }
+  NSString *basePath = [[self baseProject] baseDirectoryPath];
+
+  if ([myPath hasPrefix: basePath]) 
+    {
+      myPath = [myPath substringFromIndex: [basePath length]+1];
+    }
   return myPath;
 }
 
--(void)makeTarget:(NSString *)targetName;
+-(void)makeTarget: (NSString *)targetName
 {
-  fprintf(stdout,"  =subproject %s\n",[[self pathFromBase] cString]);
-  fflush(stdout);
-  if ([targetName isEqualToString:@"InstallHeaders"]) {
-    [self installHeaders];
-    [self buildSubprojects:targetName];
-  } else if ([targetName isEqualToString:@"default"]) {
-    [self buildSubprojects:targetName];
-   [self buildClasses];
-  } else {
-    [super makeTarget:targetName];
-  }
+  NSLog(@"  =subproject %@\n", [self pathFromBase]);
+  if ([targetName isEqualToString: @"InstallHeaders"]) 
+    {
+      [self installHeaders];
+      [self buildSubprojects: targetName];
+    } 
+  else if ([targetName isEqualToString: @"default"]) 
+    {
+      [self buildSubprojects: targetName];
+      [self buildClasses];
+    } 
+  else 
+    {
+      [super makeTarget: targetName];
+    }
 }
 
 @end

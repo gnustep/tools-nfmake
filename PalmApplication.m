@@ -52,44 +52,43 @@
 
 @implementation PalmApplication
 
-+(BOOL)buildsType:(NSString *)aType;
++(BOOL)buildsType: (NSString *)aType
 {
-  if ([aType isEqualToString:@"PalmApplication"]) {
-    return YES;
-  }
+  if ([aType isEqualToString: @"PalmApplication"]) 
+    {
+      return YES;
+    }
   return NO;
 }
 
-- (NSString *)prcInputDir;
+- (NSString *)prcInputDir
 {
   NSString *aString = [[self outputDirectory] stringByAppendingPathComponent:@"prcinput"];
   return aString;
 }
 
-- (NSString *)compilerOutput;
+- (NSString *)compilerOutput
 {
   NSString *aString = [[self outputDirectory] stringByAppendingPathComponent:@"o"];
   return aString;
 }
 
-
-
-
-- (NSArray *)pilrcFlags;
+- (NSArray *)pilrcFlags
 {
   NSArray *baseArray= [[self filesTable] objectForKey:@"RESOURCE_DIRS"];
   NSMutableArray *newArray = [NSMutableArray array];
-
   int x;
+
   [newArray addObject:@"-allowEditID"];
-  for (x=0; x< [baseArray count]; x++) {
-    [newArray addObject:@"-I"];
-    [newArray addObject:[baseArray objectAtIndex:x]];
-  }
+  for (x=0; x< [baseArray count]; x++) 
+    {
+      [newArray addObject:@"-I"];
+      [newArray addObject:[baseArray objectAtIndex:x]];
+    }
   return newArray;
 }
 
-- (void)makeResourceFile:(NSString *)resourceFile;
+- (void)makeResourceFile:(NSString *)resourceFile
 {
   id theMan = [NSFileManager defaultManager];
 
@@ -112,61 +111,59 @@
     [aTask launch];
     //sleep(1);
     [aTask waitUntilExit];
-    if ([aTask terminationStatus]!=0) {
-      fprintf(stderr,"Abort (%d)\n",[aTask terminationStatus]);
-      exit([aTask terminationStatus]);
-    } else {
-    }
+    if ([aTask terminationStatus]!=0) 
+      {
+	fprintf(stderr,"Abort (%d)\n",[aTask terminationStatus]);
+	exit([aTask terminationStatus]);
+      }
   }
-  
 }
 
-- (NSString *)makeCodeFile:(NSString *)sourceFile;
+- (NSString *)makeCodeFile:(NSString *)sourceFile
 {
   id theMan = [NSFileManager defaultManager];
-NSString *outputName = [[sourceFile stringByDeletingPathExtension] stringByAppendingPathExtension:@"o"];
-NSString *fullOutputPath=[[self compilerOutput] stringByAppendingPathComponent:outputName];
-
+  NSString *outputName = [[sourceFile stringByDeletingPathExtension] stringByAppendingPathExtension:@"o"];
+  NSString *fullOutputPath=[[self compilerOutput] stringByAppendingPathComponent:outputName];
+  
   {
-	  NSString *targetDir;
-	  targetDir = fullOutputPath;
-	  targetDir = [targetDir stringByDeletingLastPathComponent];
+    NSString *targetDir;
+    targetDir = fullOutputPath;
+    targetDir = [targetDir stringByDeletingLastPathComponent];
     //NSLog(@"Making %@",targetDir);
     [theMan makeRecursiveDirectory:targetDir];
   }
-
+  
   if ([theMan newerFile:sourceFile :fullOutputPath]==sourceFile) 
-  {
-    NSTask *aTask = [[[NSTask alloc] init] autorelease];
-    NSMutableArray *arguments= [NSMutableArray array];
-    fprintf(stdout,"===Compiling  %s\n",[sourceFile cString]);
-    fflush(stdout);
-    [arguments addObject:@"-g"];
-    [arguments addObject:@"-mdebug-labels"];
-    //[arguments addObject:@"-O1"];
-    [arguments addObject:@"-I."];
-    [arguments addObject:@"-c"];
-    [arguments addObject:@"-Wall"];
-    [arguments addObject:sourceFile];
-    [arguments addObject:@"-o"];
-    [arguments addObject:fullOutputPath];
-
-    [aTask setLaunchPath:@"m68k-palmos-gcc"];
-    [aTask setArguments:arguments];
-    [aTask launch];
-    //sleep(1);
-    [aTask waitUntilExit];
-    if ([aTask terminationStatus]!=0) {
-      fprintf(stderr,"Abort (%d)\n",[aTask terminationStatus]);
-      exit([aTask terminationStatus]);
-    } else {
+    {
+      NSTask *aTask = [[[NSTask alloc] init] autorelease];
+      NSMutableArray *arguments= [NSMutableArray array];
+      fprintf(stdout,"===Compiling  %s\n",[sourceFile cString]);
+      fflush(stdout);
+      [arguments addObject:@"-g"];
+      [arguments addObject:@"-mdebug-labels"];
+      //[arguments addObject:@"-O1"];
+      [arguments addObject:@"-I."];
+      [arguments addObject:@"-c"];
+      [arguments addObject:@"-Wall"];
+      [arguments addObject:sourceFile];
+      [arguments addObject:@"-o"];
+      [arguments addObject:fullOutputPath];
+      
+      [aTask setLaunchPath:@"m68k-palmos-gcc"];
+      [aTask setArguments:arguments];
+      [aTask launch];
+      //sleep(1);
+      [aTask waitUntilExit];
+      if ([aTask terminationStatus]!=0) 
+        {
+	  fprintf(stderr,"Abort (%d)\n",[aTask terminationStatus]);
+	  exit([aTask terminationStatus]);
+	}
     }
-  }
   return fullOutputPath;
 }
 
-
-- (void)makeCode;
+- (void)makeCode
 {
   NSArray *baseArray= [[self filesTable] objectForKey:@"OTHER_LINKED"];
   NSMutableArray *allOArray= [NSMutableArray array];
@@ -176,37 +173,38 @@ NSString *fullOutputPath=[[self compilerOutput] stringByAppendingPathComponent:o
 
   symFile = [[self prcInputDir] stringByAppendingPathComponent:@"PROJECTSYM"];
 
-  while (x--) {
-    NSString *outputFile = [self makeCodeFile:[baseArray objectAtIndex:x]];
-    [allOArray addObject:outputFile];
-  }
-
-  if (relink) {
-    NSTask *aTask = [[[NSTask alloc] init] autorelease];
-    NSMutableArray *arguments= [NSMutableArray array];
-    fprintf(stdout,"===Linking  PROJECTSYM\n");
-    fflush(stdout);
-    [arguments addObject:@"-g"];
-    //[arguments addObject:@"-O1"];
-    [arguments addObject:@"-o"];
-    [arguments addObject:symFile];
-    [arguments addObjectsFromArray:allOArray];
-
-    [aTask setLaunchPath:@"m68k-palmos-gcc"];
-    [aTask setArguments:arguments];
-    [aTask launch];
-    //sleep(1);
-    [aTask waitUntilExit];
-    if ([aTask terminationStatus]!=0) {
-      fprintf(stderr,"Abort (%d)\n",[aTask terminationStatus]);
-      exit([aTask terminationStatus]);
-    } else {
+  while (x--) 
+    {
+      NSString *outputFile = [self makeCodeFile:[baseArray objectAtIndex:x]];
+      [allOArray addObject:outputFile];
     }
-  }
+  
+  if (relink) 
+    {
+      NSTask *aTask = [[[NSTask alloc] init] autorelease];
+      NSMutableArray *arguments= [NSMutableArray array];
+      fprintf(stdout,"===Linking  PROJECTSYM\n");
+      fflush(stdout);
+      [arguments addObject:@"-g"];
+      //[arguments addObject:@"-O1"];
+      [arguments addObject:@"-o"];
+      [arguments addObject:symFile];
+      [arguments addObjectsFromArray:allOArray];
+      
+      [aTask setLaunchPath:@"m68k-palmos-gcc"];
+      [aTask setArguments:arguments];
+      [aTask launch];
+      //sleep(1);
+      [aTask waitUntilExit];
+      if ([aTask terminationStatus]!=0) 
+        {
+	  fprintf(stderr,"Abort (%d)\n",[aTask terminationStatus]);
+	  exit([aTask terminationStatus]);
+	}
+    }
 }
 
-
-- (NSString *)executablePath;
+- (NSString *)executablePath
 {
   NSString *theString = [self outputDirectory];
   theString = [theString stringByAppendingPathComponent:[self projectName]];
@@ -215,15 +213,12 @@ NSString *fullOutputPath=[[self compilerOutput] stringByAppendingPathComponent:o
   return theString;
 }
 
-- (void)buildPrc;
+- (void)buildPrc
 {
-	NSFileManager *theMan = [NSFileManager defaultManager];
-	NSString *sourceDirectory = [theMan currentDirectoryPath];
-	
-
+  NSFileManager *theMan = [NSFileManager defaultManager];
+  NSString *sourceDirectory = [theMan currentDirectoryPath];
   NSTask *aTask = [[[NSTask alloc] init] autorelease];
   NSMutableArray *arguments= [NSMutableArray array];
-
   NSString *targetFile = [self executablePath];
   NSString *defFile = [initialDictionary objectForKey:@"PROJECTDEF"];
 
@@ -246,44 +241,49 @@ NSString *fullOutputPath=[[self compilerOutput] stringByAppendingPathComponent:o
 
   //sleep(1);
   [aTask waitUntilExit];
-  if ([aTask terminationStatus]!=0) {
-    fprintf(stderr,"Abort (%d)\n",[aTask terminationStatus]);
-    exit([aTask terminationStatus]);
-  } else {
-  }
-[theMan changeCurrentDirectoryPath:sourceDirectory];
-
+  if ([aTask terminationStatus]!=0) 
+    {
+      fprintf(stderr,"Abort (%d)\n",[aTask terminationStatus]);
+      exit([aTask terminationStatus]);
+    }
+  [theMan changeCurrentDirectoryPath:sourceDirectory];
 }
 
-- (void)installFinalProduct;
+- (void)installFinalProduct
 {
 }
 
-- (void)makeResourceFiles;
+- (void)makeResourceFiles
 {
   NSArray *baseArray= [[self filesTable] objectForKey:@"RESOURCE_FILES"];
   int x=[baseArray count];
   id theMan = [NSFileManager defaultManager];
+
   [theMan  removeFileAtPath: [self prcInputDir]
 		  handler: nil];
-  while (x--) {
-    [self makeResourceFile:[baseArray objectAtIndex:x]];
-  }
+  while (x--) 
+    {
+      [self makeResourceFile:[baseArray objectAtIndex:x]];
+    }
 }
 
-- (void)makeTarget:(NSString *)targetName;
+- (void)makeTarget:(NSString *)targetName
 {
-  if ([targetName isEqualToString:@"default"]) {
-    [self makeResourceFiles];
-    [self makeCode];
-    [self buildPrc];
-  } else if ([targetName isEqualToString:@"install"]) {
-    [self makeTarget:@"default"];
-    [self installFinalProduct];
-  } else {
-    [super makeTarget:targetName];
-  }
+  if ([targetName isEqualToString:@"default"]) 
+    {
+      [self makeResourceFiles];
+      [self makeCode];
+      [self buildPrc];
+    } 
+  else if ([targetName isEqualToString:@"install"]) 
+    {
+      [self makeTarget:@"default"];
+      [self installFinalProduct];
+    } 
+  else 
+    {
+      [super makeTarget:targetName];
+    }
 }
-
 
 @end

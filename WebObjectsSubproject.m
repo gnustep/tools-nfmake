@@ -24,53 +24,60 @@
 #import "WebObjectsSubproject.h"
 
 @implementation WebObjectsSubproject
-+(BOOL)buildsType:(NSString *)aType;
+
++(BOOL)buildsType:(NSString *)aType
 {
-  if ([aType isEqualToString:@"WebObjectsSubproject"]) {
-    return YES;
-  }
+  if ([aType isEqualToString:@"WebObjectsSubproject"]) 
+    {
+      return YES;
+    }
   return NO;
 }
 
--(NSString *)componentPath;   // where the component is assembled
+// where the component is assembled
+-(NSString *)componentPath
 {
   return [parentProject componentPath];
 }
 
--(NSString *)serverResourcePath;
+-(NSString *)serverResourcePath
 {
   return [parentProject serverResourcePath];
 }
 
-- (NSArray *)componentSpreadResources;
+- (NSArray *)componentSpreadResources
 {
   return   [parentProject componentSpreadResources];
   // [parentProject filesTable] objectForKey:@"WEBSERVER_RESOURCES"];
 }
 
-- (NSString *)pathFromBase;
+- (NSString *)pathFromBase
 {
   NSString *myPath = [self baseDirectoryPath];
-  NSString *basePath=[[self baseProject] baseDirectoryPath];
-  if ([myPath hasPrefix:basePath]) {
-   myPath=[myPath substringFromIndex:[basePath length]+1];
-  }
+  NSString *basePath = [[self baseProject] baseDirectoryPath];
+
+  if ([myPath hasPrefix: basePath]) 
+    {
+      myPath=[myPath substringFromIndex:[basePath length]+1];
+    }
   return myPath;
 }
 
--(void)makeTarget:(NSString *)targetName;
+-(void)makeTarget:(NSString *)targetName
 {
   fprintf(stdout,"  =subproject %s\n",[[self pathFromBase] cString]);
   //fprintf(stdout,"Building %s\n",[[self projectName] cString]);
   fflush(stdout);
-  if ([targetName isEqualToString:@"default"]) {
-    [self installResources];
-    [self buildSubprojects:targetName];
-    [self buildClasses];
-  } else {
-    [super makeTarget:targetName];
-  }
-
+  if ([targetName isEqualToString:@"default"]) 
+    {
+      [self installResources];
+      [self buildSubprojects:targetName];
+      [self buildClasses];
+    } 
+  else 
+    {
+      [super makeTarget:targetName];
+    } 
 }
 
 @end

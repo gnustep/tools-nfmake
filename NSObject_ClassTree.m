@@ -36,7 +36,7 @@
 
 @implementation NSObject(ClassTree)
 
-+ (NSMutableArray *)loadedSubclassArray;
++ (NSMutableArray *)loadedSubclassArray
 {
 #if defined(GNU_RUNTIME)
   void *es = NULL;

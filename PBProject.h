@@ -69,6 +69,7 @@
 - (NSString *)resourcePath;
 - (NSArray *)cFlagArray;
 - (NSArray *)headerDirectoryFlags;  // -I flags
+- (BOOL)gnustepFlattened;
 
 // Linking
 - (NSArray *)executableLinkFlags; // this is all frameworks and libraries for a FINAL executable

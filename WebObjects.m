@@ -28,34 +28,40 @@
 
 @implementation WebObjects
 
-- (NSString *)componentName;
+- (NSString *)componentName
 {
   NSString *extension = [self buildExtension];
-  if (extension) {
-    return [NSString stringWithFormat:@"%@.%@",
-             [self projectName],extension];
-  } else {
-    return [NSString stringWithFormat:@"%@.gswa",
-	   [self projectName]];
-  }
-}
--(NSString *)componentPath;   // where the component is assembled
-{
-return [[self buildWebObjectsDirectory] stringByAppendingPathComponent:[self componentName]];
+  
+  if (extension) 
+    {
+      return [NSString stringWithFormat:@"%@.%@",
+		       [self projectName],extension];
+    } 
+  else 
+    {
+      return [NSString stringWithFormat:@"%@.gswa",
+		       [self projectName]];
+    }
 }
 
-+(BOOL)buildsType:(NSString *)aType;
+// where the component is assembled
+-(NSString *)componentPath
 {
-  if ([aType isEqualToString:@"WebObjectsApplication"]) {
-    return YES;
-  }
+  return [[self buildWebObjectsDirectory] stringByAppendingPathComponent:[self componentName]];
+}
+
++(BOOL)buildsType:(NSString *)aType
+{
+  if ([aType isEqualToString:@"WebObjectsApplication"]) 
+    {
+      return YES;
+    }
   return NO;
 }
 
 
--(void)linkFinalProduct;
+-(void)linkFinalProduct
 {
-  NSTask *aTask = [[[NSTask alloc] init] autorelease];
   NSMutableArray *arguments= [NSMutableArray array];
 
   if ([[NSFileManager defaultManager] file:[self executablePath] isOlderThanFiles:[self linkables]]==NO) return;
@@ -68,21 +74,11 @@ return [[self buildWebObjectsDirectory] stringByAppendingPathComponent:[self com
   [arguments addObjectsFromArray:[self linkables]];
   [arguments addObjectsFromArray:[self libraryDirectoryFlags]];
   [arguments addObjectsFromArray:[self executableLinkFlags]];
-  [aTask setLaunchPath:@"gcc"];
-  [aTask setArguments:arguments];
-  [aTask setEnvironment:[self subTaskEnvironment]];
-//  fprintf(stdout,"%s\n",[[arguments description] cString]); fflush(stdout);
-  [aTask launch];
-  //sleep (30);
-  [aTask waitUntilExit];
-  if ([aTask terminationStatus]!=0) {
-    fprintf(stderr,"Abort\n");
-    exit([aTask terminationStatus]);
-  } else {
-  }
+
+  [self compileWithArguments: arguments];
 }
 
--(NSString *)serverResourcePath;
+-(NSString *)serverResourcePath
 {
   return [[self componentPath] stringByAppendingPathComponent:@"ServerResources"];
 }
@@ -90,11 +86,10 @@ return [[self buildWebObjectsDirectory] stringByAppendingPathComponent:[self com
 // The only reason for subbing this out to a new task is that prepping a file for 
 // GNUstep based WebObjects is very much a personal thing, (site dependant), and
 // our own implementation uses many frameworks which aren't available when bootstrapping nfmake
-- (void)cleanHTMLFile:(NSString *)theFile;
+- (void)cleanHTMLFile:(NSString *)theFile
 {
   NSTask *aTask = [[[NSTask alloc] init] autorelease];
   NSMutableArray *arguments= [NSMutableArray array];
-
 
   [arguments addObject:theFile];
   [aTask setLaunchPath:@"prep_gswc"];
@@ -111,78 +106,80 @@ return [[self buildWebObjectsDirectory] stringByAppendingPathComponent:[self com
   }
 }
 
-
-
 // installs anything defined by WEBSERVER_RESOURCES in the root PB.project
 // but does it for a specific component.
 // This allows you to have Main.gswc/images/foo.gif be rewritten as
 // Foo.gswa/ServerResuorces/images/Main/foo.gif
 // and then copy ServerResources to the web server (thus saving the round trip to the app server)
-
-- (void)installWebServerResources:(NSArray *)webServerResources forComponent:(NSString *)fileName;
+- (void)installWebServerResources:(NSArray *)webServerResources forComponent:(NSString *)fileName
 {
   int x;
   id theMan = [NSFileManager defaultManager];
-  for (x=0 ; x< [webServerResources count]; x++) {
-    NSString *webServerItem= [webServerResources objectAtIndex:x];
-    NSString *spreadDir=[NSString stringWithFormat:@"%@/%@",fileName,webServerItem];
-    NSString *targetDir;
-    if ([theMan fileExistsAtPath:spreadDir ]) {
-      id parentDirectory = [theMan currentDirectoryPath];
-      NSArray *subItems = [theMan directoryContentsAtPath:spreadDir];
 
-      targetDir = [[self serverResourcePath] stringByAppendingPathComponent:webServerItem];
-      targetDir = [targetDir stringByAppendingPathComponent:fileName];
-      targetDir = [targetDir stringByDeletingPathExtension];
+  for (x=0 ; x< [webServerResources count]; x++) 
+    {
+      NSString *webServerItem= [webServerResources objectAtIndex:x];
+      NSString *spreadDir=[NSString stringWithFormat:@"%@/%@",fileName,webServerItem];
+      NSString *targetDir;
 
-      [theMan changeCurrentDirectoryPath:spreadDir];
-	    [theMan updateFiles:subItems
-	            toDirectory:targetDir 
-	      operationDelegate:self];
-      [theMan changeCurrentDirectoryPath:parentDirectory];
-
+      if ([theMan fileExistsAtPath:spreadDir ]) 
+        {
+	  id parentDirectory = [theMan currentDirectoryPath];
+	  NSArray *subItems = [theMan directoryContentsAtPath:spreadDir];
+	  
+	  targetDir = [[self serverResourcePath] stringByAppendingPathComponent:webServerItem];
+	  targetDir = [targetDir stringByAppendingPathComponent:fileName];
+	  targetDir = [targetDir stringByDeletingPathExtension];
+	  
+	  [theMan changeCurrentDirectoryPath:spreadDir];
+	  [theMan updateFiles:subItems
+	          toDirectory:targetDir 
+	    operationDelegate:self];
+	  [theMan changeCurrentDirectoryPath:parentDirectory];
+	}
     }
-  }
 }
 
-- (NSArray *)componentSpreadResources;
+- (NSArray *)componentSpreadResources
 {
-  return   [[self filesTable] objectForKey:@"WEBSERVER_RESOURCES"];
+  return [[self filesTable] objectForKey:@"WEBSERVER_RESOURCES"];
 }
 
 
 // This installs things like Main.gswc into Resources to be used by the AppServer
  // rewrites any .html files
-- (void)installWoComponents;
+- (void)installWoComponents
 {
   NSArray *theArray;
   id theMan = [NSFileManager defaultManager];
   int x;
   theArray = [[self filesTable] objectForKey:@"WO_COMPONENTS"];
-  for (x=0 ; x< [theArray count]; x++) {
-    id theComponent = [theArray objectAtIndex:x];
-    [theMan updateFiles:[NSArray arrayWithObject:theComponent]
-            toDirectory:[self resourcePath] 
-      operationDelegate:self];
-    [self installWebServerResources:[self componentSpreadResources] forComponent:theComponent];
-  }
 
+  for (x=0 ; x< [theArray count]; x++) 
+    {
+      id theComponent = [theArray objectAtIndex:x];
+      [theMan updateFiles:[NSArray arrayWithObject:theComponent]
+	      toDirectory:[self resourcePath] 
+	operationDelegate:self];
+      [self installWebServerResources:[self componentSpreadResources] forComponent:theComponent];
+    }
 }
 
-- (BOOL)shouldCopyFile:(NSString *)srcFile toDest:(NSString *)destFile;
+- (BOOL)shouldCopyFile:(NSString *)srcFile toDest:(NSString *)destFile
 {
   return YES;
 }
 
-- (void)copiedFile:(NSString *)srcFile toDest:(NSString *)destFile;
+- (void)copiedFile:(NSString *)srcFile toDest:(NSString *)destFile
 {
-  if ([[destFile pathExtension] isEqualToString:@"html"]) {
-    //NSLog(@"Cleaning %@",srcFile);
-    [self cleanHTMLFile:destFile];
-  }
+  if ([[destFile pathExtension] isEqualToString:@"html"]) 
+    {
+      //NSLog(@"Cleaning %@",srcFile);
+      [self cleanHTMLFile:destFile];
+    }
 }
 
-- (void)installResources;
+- (void)installResources
 {
   NSArray *theArray;
   id theMan = [NSFileManager defaultManager];
@@ -192,26 +189,29 @@ return [[self buildWebObjectsDirectory] stringByAppendingPathComponent:[self com
   [theMan makeRecursiveDirectory:[self serverResourcePath]];
 
   theArray = [[self filesTable] objectForKey:@"WEBSERVER_RESOURCES"];
-  if (theArray && [theArray count]) {
-    [theMan updateFiles:theArray toDirectory:[self serverResourcePath]];
-  }
+  if (theArray && [theArray count]) 
+    {
+      [theMan updateFiles:theArray toDirectory:[self serverResourcePath]];
+    }
 
   theArray = [[self filesTable] objectForKey:@"WOAPP_RESOURCES"];
-  if (theArray && [theArray count]) {
-    [theMan updateFiles:theArray toDirectory:[self resourcePath]];
-  }
+  if (theArray && [theArray count]) 
+    {
+      [theMan updateFiles:theArray toDirectory:[self resourcePath]];
+    }
   [self installWoComponents];
 }
 
-- (void)install;
+- (void)install
 {
   NSFileManager *theMan=[NSFileManager defaultManager];
   NSString *installDirectory=[self installDirectory];
 
-  if (!installDirectory) {
-    //NSLog(@"no INSTALLDIR set using /usr/GNUstep/Local/Components");
-    installDirectory = @"/usr/GNUstep/Local/WOApps";
-  }
+  if (!installDirectory) 
+    {
+	//NSLog(@"no INSTALLDIR set using /usr/GNUstep/Local/Components");
+	installDirectory = @"/usr/GNUstep/Local/WOApps";
+    }
 
   // fprintf(stdout,"Installing to %s\n",[installDirectory cString]);
   [theMan installFromPath:[self componentPath] 
@@ -220,21 +220,24 @@ return [[self buildWebObjectsDirectory] stringByAppendingPathComponent:[self com
 
 }
 
--(void)makeTarget:(NSString *)targetName;
+-(void)makeTarget:(NSString *)targetName
 {
-  if ([targetName isEqualToString:@"default"]) {
-    [self installResources];
-    [self buildSubprojects:targetName];
-    [self buildClasses];
-    [self linkFinalProduct];
-  } else if ([targetName isEqualToString:@"install"]) {
-    [self makeTarget:@"default"];
-    [self install];
-  } else {
-    [super makeTarget:targetName];
-  }
+  if ([targetName isEqualToString:@"default"]) 
+    {
+      [self installResources];
+      [self buildSubprojects:targetName];
+      [self buildClasses];
+      [self linkFinalProduct];
+    } 
+  else if ([targetName isEqualToString:@"install"]) 
+    {
+      [self makeTarget:@"default"];
+      [self install];
+    } 
+  else 
+    {
+      [super makeTarget:targetName];
+    }
 }
-
-
 
 @end

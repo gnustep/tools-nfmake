@@ -26,11 +26,12 @@
 
 @implementation DocumentApplication
 
-+(BOOL)buildsType:(NSString *)aType;
++(BOOL)buildsType: (NSString *)aType
 {
-  if ([aType isEqualToString:@"Document Based Application"]) {
-    return YES;
-  }
+  if ([aType isEqualToString: @"Document Based Application"]) 
+    {
+      return YES;
+    }
   return NO;
 }
 

@@ -38,131 +38,130 @@
 
 @implementation ToolStyle
 
-+(BOOL)buildsType:(NSString *)aType;
++(BOOL)buildsType:(NSString *)aType
 {
-  if ([aType isEqualToString:@"Tool"]) {
-    return YES;
-  }
+  if ([aType isEqualToString:@"Tool"]) 
+    {
+      return YES;
+    }
   return NO;
 }
 
 // unlike all other packages, a tool does not come is a wrapper
 // IMHO - it should
-- (NSString *)executablePath;
+- (NSString *)executablePath
 {
-  return [[self outputDirectory] stringByAppendingPathComponent:[self projectName]];
+  return [[self outputDirectory] stringByAppendingPathComponent: [self projectName]];
 }
 
-
 // We place tool 
--(NSString *)resourcePath;
+-(NSString *)resourcePath
 {
   NSString *tmpString = [self outputDirectory];
-  tmpString=[tmpString stringByAppendingPathComponent:@"Resources"];
-  tmpString=[tmpString stringByAppendingPathComponent:[self projectName]];
+
+  tmpString = [tmpString stringByAppendingPathComponent: @"Resources"];
+  tmpString = [tmpString stringByAppendingPathComponent: [self projectName]];
   return tmpString;
 }
 
-
-
--(void)linkFinalProduct;
+-(void)linkFinalProduct
 {
   NSTask *aTask = [[[NSTask alloc] init] autorelease];
   NSMutableArray *arguments= [NSMutableArray array];
 
-  if ([[NSFileManager defaultManager] file:[self executablePath] isOlderThanFiles:[self linkables]]==NO) {
-
-//    fprintf(stdout,"up to date\n");
-    return;
-  }
-  fprintf(stdout,"Linking %s\n",[[self executablePath] cString]); fflush(stdout);
+  if ([[NSFileManager defaultManager] file: [self executablePath] 
+			  isOlderThanFiles: [self linkables]] == NO) 
+    {
+//    NSLog(@"up to date\n");
+      return;
+    }
+  NSLog(@"Linking %@\n", [self executablePath]);
 
   [arguments addObjectsFromArray:[self cFlagArray]];
-  [arguments addObject:@"-o"];
-  [arguments addObject:[self executablePath]];
-  [arguments addObjectsFromArray:[self linkables]];
-  [arguments addObjectsFromArray:[self libraryDirectoryFlags]];
-  [arguments addObjectsFromArray:[self executableLinkFlags]];
-  [aTask setLaunchPath:@"gcc"];
-  [aTask setArguments:arguments];
-  [aTask setEnvironment:[self subTaskEnvironment]];
-//  fprintf(stdout,"%s\n",[[arguments description] cString]); fflush(stdout);
+  [arguments addObject: @"-o"];
+  [arguments addObject: [self executablePath]];
+  [arguments addObjectsFromArray: [self linkables]];
+  [arguments addObjectsFromArray: [self libraryDirectoryFlags]];
+  [arguments addObjectsFromArray: [self executableLinkFlags]];
+  [aTask setLaunchPath: @"gcc"];
+  [aTask setArguments: arguments];
+  [aTask setEnvironment: [self subTaskEnvironment]];
+//  NSLog(@"%@\n", [arguments description]);
   [aTask launch];
   //sleep (30);
   [aTask waitUntilExit];
-  if ([aTask terminationStatus]!=0) {
-    fprintf(stderr,"Abort\n");
-    exit([aTask terminationStatus]);
-  } else {
-  }
+  if ([aTask terminationStatus] != 0) 
+    {
+      NSLog(@"Abort\n");
+      exit([aTask terminationStatus]);
+    } 
 }
 
-- (NSString *) installDirectory;
+- (NSString *) installDirectory
 {
   NSString *aString = [super installDirectory];
+
   if (aString) return aString;
   // TODO - get from environment
   return @"/usr/GNUstep/Local/Tools";
 }
 
-- (NSString *)installedExecutablePath;
+- (NSString *)installedExecutablePath
 {
-  return [[self installDirectory] stringByAppendingPathComponent:[self projectName]];
+  return [[self installDirectory] stringByAppendingPathComponent: [self projectName]];
 }
 
-- (NSString *)installedResourceDirectory;
+- (NSString *)installedResourceDirectory
 {
-  NSString *aString=[self installDirectory];
-  aString=[aString stringByAppendingPathComponent:@"Resources"];
-  return aString;
-  
+  return [[self installDirectory] stringByAppendingPathComponent: @"Resources"];
 }
 
-
-- (NSString *)installedResourcePath;
+- (NSString *)installedResourcePath
 {
-  NSString *aString=[self installedResourceDirectory];
-  aString=[aString stringByAppendingPathComponent:[self projectName]];
-  return aString;
-  
+  return [[self installedResourceDirectory] stringByAppendingPathComponent: 
+						[self projectName]];
 }
 
-- (void)installFinalProduct;
+- (void)installFinalProduct
 {
-  NSFileManager *theMan=[NSFileManager defaultManager];
+  NSFileManager *theMan = [NSFileManager defaultManager];
 
+  // NSLog(@"Installing %@\n", [self installedExecutablePath]);
+  [theMan installFromPath: [self executablePath] 
+                    toDir: [self installDirectory] 
+        operationDelegate: [self copyDelegate]];
 
-  // fprintf(stdout,"Installing %s\n",[[self installedExecutablePath] cString]);
-  [theMan installFromPath:[self executablePath] 
-                    toDir:[self installDirectory] 
-        operationDelegate:[self copyDelegate]];
-
-  //fprintf(stdout,"Installing %s\n",[[self installedResourcePath] cString]);
-  [theMan installFromPath:[self resourcePath] 
-                    toDir:[self installedResourceDirectory] 
-        operationDelegate:[self copyDelegate]];
-
+  // NSLog(@"Installing %@\n", [self installedResourcePath]);
+  [theMan installFromPath: [self resourcePath] 
+                    toDir: [self installedResourceDirectory] 
+        operationDelegate: [self copyDelegate]];
 }
 
 
-- (void)makeTarget:(NSString *)targetName;
+- (void)makeTarget:(NSString *)targetName
 {
-  if ([targetName isEqualToString:@"InstallHeaders"]) {
-    [self installHeaders];
-    [self buildSubprojects:targetName];
-  } else if ([targetName isEqualToString:@"default"]) {
-    [self makeTarget:@"InstallHeaders"];
-    [self installResources];
-    [self buildSubprojects:targetName];
-    [self buildClasses];
-    [self linkFinalProduct];
-  } else if ([targetName isEqualToString:@"install"]) {
-    [self makeTarget:@"default"];
-    [self installFinalProduct];
-  } else {
-    [super makeTarget:targetName];
-  }
+  if ([targetName isEqualToString: @"InstallHeaders"]) 
+    {
+      [self installHeaders];
+      [self buildSubprojects: targetName];
+    } 
+  else if ([targetName isEqualToString: @"default"]) 
+    {
+      [self makeTarget: @"InstallHeaders"];
+      [self installResources];
+      [self buildSubprojects: targetName];
+      [self buildClasses];
+      [self linkFinalProduct];
+    } 
+  else if ([targetName isEqualToString: @"install"]) 
+    {
+      [self makeTarget: @"default"];
+      [self installFinalProduct];
+    } 
+  else 
+    {
+      [super makeTarget:targetName];
+    }
 }
-
 
 @end

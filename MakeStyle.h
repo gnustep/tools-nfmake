@@ -34,6 +34,7 @@
 -(void)installResources;
 -(void)buildSubprojects:(NSString *)target;
 
+-(void)compileWithArguments: (NSArray *)arguments;
 
 - (void)removeBuildArea;
 - (void)makeTarget:(NSString *)targetName;

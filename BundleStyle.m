@@ -26,87 +26,85 @@
 #import "NSFileManager_CompareFiles.h"
 
 @implementation BundleStyle
-+(BOOL)buildsType:(NSString *)aType;
+
++(BOOL)buildsType: (NSString *)aType
 {
-  if ([aType isEqualToString:@"Loadable Bundle"]) {
-    return YES;
-  }
+  if ([aType isEqualToString: @"Loadable Bundle"]) 
+    {
+      return YES;
+    }
   return NO;
 }
 
-
--(void)linkFinalProduct;
+-(void)writePList
 {
-  NSTask *aTask = [[[NSTask alloc] init] autorelease];
-  NSMutableArray *arguments= [NSMutableArray array];
   NSString *infoPath;
+  NSMutableDictionary *theDict = [NSMutableDictionary dictionary];
 
-  if ([[NSFileManager defaultManager] file:[self executablePath] isOlderThanFiles:[self linkables]]==NO) {
+  infoPath = [[[self executablePath] stringByDeletingLastPathComponent] 
+		 stringByAppendingPathComponent: @"Info.plist"];
 
-//    fprintf(stdout,"up to date\n");
-    return;
-  }
+  [theDict setObject: [self projectName] forKey: @"NSExecutable"];
+  [theDict writeToFile: infoPath atomically: YES];
+}
 
-  fprintf(stdout,"Linking %s\n",[[self executablePath] cString]); fflush(stdout);
+-(void)linkFinalProduct
+{
+  NSMutableArray *arguments= [NSMutableArray array];
 
-  //[arguments addObject:@"-v"];
-  [arguments addObjectsFromArray:[self cFlagArray]];
-  [arguments addObject:@"-shared"];
-  [arguments addObject:@"-o"];
-  [arguments addObject:[self executablePath]];
-  [arguments addObjectsFromArray:[self linkables]];
-  [arguments addObjectsFromArray:[self libraryDirectoryFlags]];
+  if ([[NSFileManager defaultManager] file: [self executablePath] 
+			  isOlderThanFiles: [self linkables]] == NO) 
+    {
+      //    NSLog(@"up to date\n");
+      return;
+    }
 
-//  [arguments addObjectsFromArray:[self frameworkLinkFlags]];
+  NSLog(@"Linking %@\n", [self executablePath]);
+  //[arguments addObject: @"-v"];
+  [arguments addObjectsFromArray: [self cFlagArray]];
+  [arguments addObject: @"-shared"];
+  [arguments addObject: @"-o"];
+  [arguments addObject: [self executablePath]];
+  [arguments addObjectsFromArray: [self linkables]];
+  [arguments addObjectsFromArray: [self libraryDirectoryFlags]];
+
+//  [arguments addObjectsFromArray: [self frameworkLinkFlags]];
   
+  [self compileWithArguments: arguments];
 
-  [aTask setLaunchPath:@"gcc"];
-  [aTask setArguments:arguments];
-//NSLog(@"%@",arguments);
-  [aTask launch];
-  //sleep(30);
-  [aTask waitUntilExit];
-  if ([aTask terminationStatus]!=0) {
-    fprintf(stderr,"Abort\n");
-    exit([aTask terminationStatus]);
-  } else {
-  }
-  infoPath = [[[self executablePath] stringByDeletingLastPathComponent] stringByAppendingPathComponent:@"Info.plist"];
-  {
-   NSMutableDictionary *theDict=[NSMutableDictionary dictionary];
-   [theDict setObject:[self projectName] forKey:@"NSExecutable"];
-   [theDict writeToFile:infoPath atomically:YES];
-  }
+  [self writePList];
 }
 
--(void)installBundle;
+-(void)installBundle
 {
-  id theMan=[NSFileManager defaultManager];
+  id theMan = [NSFileManager defaultManager];
 
-  // fprintf(stdout,"Installing to %s\n",[[self buildComponentDirectory] cString]);
-  [theMan installFromPath:[self componentPath] 
-                    toDir:[self buildComponentDirectory]
-        operationDelegate:[self copyDelegate]];
+  // NSLog(@"Installing to %@\n", [self buildComponentDirectory]);
+  [theMan installFromPath: [self componentPath] 
+                    toDir: [self buildComponentDirectory]
+        operationDelegate: [self copyDelegate]];
 
 }
 
-
--(void)makeTarget:(NSString *)targetName;
+-(void)makeTarget: (NSString *)targetName;
 {
-  if ([targetName isEqualToString:@"default"]) {
-    [self buildSubprojects:targetName];
-    [self buildClasses];
-    [self installHeaders];
-    [self installResources];
-    [self linkFinalProduct];
-  } else  if ([targetName isEqualToString:@"install"]) {
-    [self makeTarget:@"default"];
-    [self installBundle];
-  } else {
-    [super makeTarget:targetName];
-  }
+  if ([targetName isEqualToString: @"default"]) 
+    {
+      [self buildSubprojects: targetName];
+      [self buildClasses];
+      [self installHeaders];
+      [self installResources];
+      [self linkFinalProduct];
+    } 
+  else if ([targetName isEqualToString: @"install"]) 
+    {
+      [self makeTarget: @"default"];
+      [self installBundle];
+    } 
+  else 
+    {
+      [super makeTarget: targetName];
+    }
 }
-
-
 
 @end

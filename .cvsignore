@@ -1,2 +1,3 @@
 nfmake_boot
 obj
+shared_obj
