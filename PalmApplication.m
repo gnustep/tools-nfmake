@@ -81,6 +81,7 @@
   NSMutableArray *newArray = [NSMutableArray array];
 
   int x;
+  [newArray addObject:@"-allowEditID"];
   for (x=0; x< [baseArray count]; x++) {
     [newArray addObject:@"-I"];
     [newArray addObject:[baseArray objectAtIndex:x]];
@@ -101,6 +102,8 @@
     fflush(stdout);
     [arguments addObject:@"-q"];
     [arguments addObjectsFromArray:[self pilrcFlags]];
+    [arguments addObject:@"-I"];
+    [arguments addObject:[resourceFile stringByDeletingLastPathComponent]];
     [arguments addObject:resourceFile];
     [arguments addObject:[self prcInputDir]];
 
@@ -118,32 +121,35 @@
   
 }
 
-- (NSString *)makeCodeFile:(NSString *)resourceFile;
+- (NSString *)makeCodeFile:(NSString *)sourceFile;
 {
   id theMan = [NSFileManager defaultManager];
-NSString *outputName = [[resourceFile stringByDeletingPathExtension] stringByAppendingPathExtension:@"o"];
+NSString *outputName = [[sourceFile stringByDeletingPathExtension] stringByAppendingPathExtension:@"o"];
+NSString *fullOutputPath=[[self compilerOutput] stringByAppendingPathComponent:outputName];
 
   {
 	  NSString *targetDir;
-	  targetDir = [[self compilerOutput] stringByAppendingPathComponent:outputName];
+	  targetDir = fullOutputPath;
 	  targetDir = [targetDir stringByDeletingLastPathComponent];
-    NSLog(@"Making %@",targetDir);
+    //NSLog(@"Making %@",targetDir);
     [theMan makeRecursiveDirectory:targetDir];
   }
 
+  if ([theMan newerFile:sourceFile :fullOutputPath]==sourceFile) 
   {
     NSTask *aTask = [[[NSTask alloc] init] autorelease];
     NSMutableArray *arguments= [NSMutableArray array];
-    fprintf(stdout,"===Compiling  %s\n",[resourceFile cString]);
+    fprintf(stdout,"===Compiling  %s\n",[sourceFile cString]);
     fflush(stdout);
     [arguments addObject:@"-g"];
     [arguments addObject:@"-mdebug-labels"];
-    [arguments addObject:@"-O1"];
+    //[arguments addObject:@"-O1"];
+    [arguments addObject:@"-I."];
     [arguments addObject:@"-c"];
     [arguments addObject:@"-Wall"];
-    [arguments addObject:resourceFile];
+    [arguments addObject:sourceFile];
     [arguments addObject:@"-o"];
-    [arguments addObject:[[self compilerOutput] stringByAppendingPathComponent:outputName]];
+    [arguments addObject:fullOutputPath];
 
     [aTask setLaunchPath:@"m68k-palmos-gcc"];
     [aTask setArguments:arguments];
@@ -156,7 +162,7 @@ NSString *outputName = [[resourceFile stringByDeletingPathExtension] stringByApp
     } else {
     }
   }
-  return [[self compilerOutput] stringByAppendingPathComponent:outputName];
+  return fullOutputPath;
 }
 
 
@@ -164,21 +170,26 @@ NSString *outputName = [[resourceFile stringByDeletingPathExtension] stringByApp
 {
   NSArray *baseArray= [[self filesTable] objectForKey:@"OTHER_LINKED"];
   NSMutableArray *allOArray= [NSMutableArray array];
+  NSString *symFile;
   int x=[baseArray count];
+  BOOL relink=YES;
+
+  symFile = [[self prcInputDir] stringByAppendingPathComponent:@"PROJECTSYM"];
+
   while (x--) {
     NSString *outputFile = [self makeCodeFile:[baseArray objectAtIndex:x]];
     [allOArray addObject:outputFile];
   }
-  
-  {
+
+  if (relink) {
     NSTask *aTask = [[[NSTask alloc] init] autorelease];
     NSMutableArray *arguments= [NSMutableArray array];
     fprintf(stdout,"===Linking  PROJECTSYM\n");
     fflush(stdout);
     [arguments addObject:@"-g"];
-    [arguments addObject:@"-O1"];
+    //[arguments addObject:@"-O1"];
     [arguments addObject:@"-o"];
-    [arguments addObject:[[self prcInputDir] stringByAppendingPathComponent:@"PROJECTSYM"]];
+    [arguments addObject:symFile];
     [arguments addObjectsFromArray:allOArray];
 
     [aTask setLaunchPath:@"m68k-palmos-gcc"];
@@ -252,6 +263,9 @@ NSString *outputName = [[resourceFile stringByDeletingPathExtension] stringByApp
 {
   NSArray *baseArray= [[self filesTable] objectForKey:@"RESOURCE_FILES"];
   int x=[baseArray count];
+  id theMan = [NSFileManager defaultManager];
+  [theMan  removeFileAtPath: [self prcInputDir]
+		  handler: nil];
   while (x--) {
     [self makeResourceFile:[baseArray objectAtIndex:x]];
   }
@@ -260,7 +274,6 @@ NSString *outputName = [[resourceFile stringByDeletingPathExtension] stringByApp
 - (void)makeTarget:(NSString *)targetName;
 {
   if ([targetName isEqualToString:@"default"]) {
-    [super makeTarget:@"clean"];  // the tools prevent any other solid way from preventing old code from creeping in
     [self makeResourceFiles];
     [self makeCode];
     [self buildPrc];
