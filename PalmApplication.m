@@ -140,6 +140,7 @@ NSString *outputName = [[resourceFile stringByDeletingPathExtension] stringByApp
     [arguments addObject:@"-mdebug-labels"];
     [arguments addObject:@"-O1"];
     [arguments addObject:@"-c"];
+    [arguments addObject:@"-Wall"];
     [arguments addObject:resourceFile];
     [arguments addObject:@"-o"];
     [arguments addObject:[[self compilerOutput] stringByAppendingPathComponent:outputName]];
