@@ -523,4 +523,12 @@
   return outArray;
 }
 
+- (NSString *)principalClassName;
+{
+  NSString *className = [initialDictionary objectForKey:@"PRINCIPALCLASS"];
+  if (!className && [[self classes] count]) {
+    className = [[[self classes] objectAtIndex:0] stringByDeletingPathExtension];
+  }
+  return className;
+}
 @end

@@ -50,6 +50,7 @@
 return [[self buildComponentDirectory] stringByAppendingPathComponent:[self componentName]];
 }
 
+
 -(void)linkFinalProduct;
 {
   NSTask *aTask = [[[NSTask alloc] init] autorelease];
@@ -90,6 +91,7 @@ return [[self buildComponentDirectory] stringByAppendingPathComponent:[self comp
   {
    NSMutableDictionary *theDict=[NSMutableDictionary dictionary];
    [theDict setObject:[self projectName] forKey:@"NSExecutable"];
+   [theDict setObject:[self principalClassName] forKey:@"NSPrincipalClass"];
    [theDict writeToFile:infoPath atomically:YES];
   }
 

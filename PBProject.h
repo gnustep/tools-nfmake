@@ -84,4 +84,5 @@
 - (PBProject *)parentProject;
 - (PBProject *)baseProject;
 
+- (NSString *)principalClassName;
 @end
