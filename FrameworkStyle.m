@@ -34,20 +34,28 @@
   return NO;
 }
 
+- (NSString *)projectHeaderPath;
+{
+  return [[self buildHeaderDirectory] stringByAppendingPathComponent:[self projectName]];
+}
+- (NSString *)publicHeaderPath;
+{
+  return [[self buildHeaderDirectory] stringByAppendingPathComponent:[self projectName]];
+}
+
 
 - (NSString *)sharedExecutablePath;
 {
-  return [[self outputDirectory] stringByAppendingPathComponent:[NSString stringWithFormat:@"lib%@.so",[self projectName]]];
+  return [[self buildLibraryDirectory] stringByAppendingPathComponent:[NSString stringWithFormat:@"lib%@.so",[self projectName]]];
 }
 
-- (NSString *)finalExecutablePath;
-{
-  return [[self systemSharedLibraryDirectory] stringByAppendingPathComponent:[NSString stringWithFormat:@"lib%@.so",[self projectName]]];
-}
 
 - (void)installLibrary;
 {
-  id theMan=[NSFileManager defaultManager];
+// install the library
+// the headers
+// the resources
+/*  id theMan=[NSFileManager defaultManager];
   NSString *destRoot=[self finalExecutablePath];
   [theMan makeRecursiveDirectory:[self systemSharedLibraryDirectory]];
   [theMan removeFileAtPath:destRoot handler:nil];
@@ -57,13 +65,14 @@
   } else {
     fprintf(stdout," installed %s\n",[destRoot cString]);
   }
+  */
 }
 
 -(void)installBundle;
 {
+/*
   id theMan=[NSFileManager defaultManager];
 
-NSString *destRoot=[self systemFrameworkRoot];
  destRoot = [destRoot stringByAppendingPathComponent:[self projectName]];
  destRoot=[destRoot stringByAppendingPathExtension:@"framework"];
  [theMan removeFileAtPath:destRoot handler:nil];
@@ -74,7 +83,7 @@ NSString *destRoot=[self systemFrameworkRoot];
    fprintf(stdout," installed %s\n",[destRoot cString]);
  }
 
- destRoot=[self systemHeaderDirectory];
+ destRoot=[self buildHeaderDirectory];
  destRoot = [destRoot stringByAppendingPathComponent:[self projectName]];
   [theMan removeFileAtPath:destRoot handler:nil];
   if ([theMan copyPath:[self publicHeaderPath] toPath:destRoot handler:nil]==NO) {
@@ -83,11 +92,62 @@ NSString *destRoot=[self systemFrameworkRoot];
   } else {
     fprintf(stdout," installed %s\n",[destRoot cString]);
   }
+*/
+}
+
+- (void)install;
+{
+  NSFileManager *theMan=[NSFileManager defaultManager];
+  NSString *installDirectory=[self installDirectory];
+  NSString *destRoot;
+	NSDictionary *environDict = [[NSProcessInfo processInfo] environment];
+   
+  if (!installDirectory) {
+    NSLog(@"no INSTALLDIR set");
+    exit(-5);
+  }
+
+// Install the headers
+  destRoot = [installDirectory stringByAppendingPathComponent:@"Headers"];
+  [theMan makeRecursiveDirectory:destRoot];
+
+  destRoot = [destRoot stringByAppendingPathComponent:[self projectName]];
+  [theMan removeFileAtPath:destRoot handler:nil];
+
+  if ([theMan copyPath:[self publicHeaderPath] toPath:destRoot handler:nil]==NO) {
+    fprintf(stderr," ERROR: could not install %s\n",[destRoot cString]);
+    exit(-1);
+  } else {
+    fprintf(stdout," installed %s\n",[destRoot cString]);
+  }
+
+// Install the executable lib
+  destRoot = [installDirectory stringByAppendingPathComponent:@"Libraries"];
+  destRoot = [destRoot stringByAppendingPathComponent:
+    [environDict objectForKey:@"GNUSTEP_HOST_CPU"]];
+  destRoot = [destRoot stringByAppendingPathComponent:
+    [environDict objectForKey:@"GNUSTEP_HOST_OS"]];
+  destRoot = [destRoot stringByAppendingPathComponent:
+    [environDict objectForKey:@"LIBRARY_COMBO"]];
+  [theMan makeRecursiveDirectory:destRoot];
+
+  destRoot = [destRoot stringByAppendingPathComponent:[NSString stringWithFormat:@"lib%@.so",[self projectName]]];
+  [theMan removeFileAtPath:destRoot handler:nil];
+
+  if ([theMan copyPath:[self sharedExecutablePath] toPath:destRoot handler:nil]==NO) {
+    fprintf(stderr," ERROR: could not install %s\n",[destRoot cString]);
+    exit(-1);
+  } else {
+    fprintf(stdout," installed %s\n",[destRoot cString]);
+  }
+
+
+// install the executable
+// install the headers
 
 }
 
-
--(void)makeComponentDirectory;
+- (void)makeComponentDirectory;
 {
  id theMan = [NSFileManager defaultManager];
 [theMan makeRecursiveDirectory:[self resourcePath]];
@@ -109,7 +169,6 @@ NSString *destRoot=[self systemFrameworkRoot];
   [arguments addObject:[self sharedExecutablePath]];
   [arguments addObjectsFromArray:[self linkables]];
   [arguments addObjectsFromArray:[self libraryDirectoryFlags]];
-  [arguments addObject:[NSString stringWithFormat:@"-L%@",[self systemSharedLibraryDirectory]]];
 
   //[arguments addObject:@"-lobjc"];
 //  [arguments addObjectsFromArray:[self frameworkLinkFlags]];
@@ -143,8 +202,7 @@ NSString *destRoot=[self systemFrameworkRoot];
     [self installResources];
   } else if ([targetName isEqualToString:@"install"]) {
     [self makeTarget:@"default"];
-    [self installBundle];
-    [self installLibrary];
+    [self install];
   } else {
     [super makeTarget:targetName];
   }

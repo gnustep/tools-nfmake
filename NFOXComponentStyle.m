@@ -1,8 +1,8 @@
 /* 
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 2000 Free Software Foundation, Inc.
    
    Written by:	Karl Kraft <karl@nfox.com>
-   Date: 		Sep 99
+   Date: 		Apr 00
    
    This file is part of nfmake - a utility for building GNUstep programs
    
@@ -21,24 +21,40 @@
    Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#import "BundleStyle.h"
+#import "NFOXComponentStyle.h"
 #import <unistd.h>
 #import "NSFileManager_CompareFiles.h"
 
-@implementation BundleStyle
+@implementation NFOXComponentStyle
 +(BOOL)buildsType:(NSString *)aType;
 {
-  if ([aType isEqualToString:@"Loadable Bundle"]) {
+  if ([aType isEqualToString:@"NFOXComponent"]) {
     return YES;
   }
   return NO;
 }
 
+- (NSString *)componentName;
+{
+  NSString *extension = [self buildExtension];
+  if (extension) {
+    return [NSString stringWithFormat:@"%@.%@",
+             [self projectName],extension];
+  } else {
+    return [NSString stringWithFormat:@"%@.build",
+	   [self projectName]];
+  }
+}
+-(NSString *)componentPath;   // where the component is assembled
+{
+return [[self buildComponentDirectory] stringByAppendingPathComponent:[self componentName]];
+}
 
 -(void)linkFinalProduct;
 {
   NSTask *aTask = [[[NSTask alloc] init] autorelease];
   NSMutableArray *arguments= [NSMutableArray array];
+  NSString *infoPath;
 
   if ([[NSFileManager defaultManager] file:[self executablePath] isOlderThanFiles:[self linkables]]==NO) {
 
@@ -70,39 +86,36 @@
     exit([aTask terminationStatus]);
   } else {
   }
-}
-
--(void)installBundle;
-{
-  id theMan=[NSFileManager defaultManager];
-  NSString *destRoot=[self buildComponentDirectory];
-
-  NSString *infoPath;
-
-  destRoot = [destRoot stringByAppendingPathComponent:[self projectName]];
-  destRoot=[destRoot stringByAppendingPathExtension:[self buildExtension]];
-  [theMan removeFileAtPath:destRoot handler:nil];
-  if ([theMan copyPath:[self componentPath] toPath:destRoot handler:nil]==NO) {
-   fprintf(stderr," ERROR: could not install bundle %s\n",[destRoot cString]);
-   exit (-1);
- } else {
-   fprintf(stdout," installed %s\n",[destRoot cString]);
- }
-  
-  /* executablePath = [destRoot stringByAppendingPathComponent:[self projectName]];
-  if ([theMan copyPath:[self executablePath] toPath:executablePath handler:nil]==NO) {
-   fprintf(stderr," ERROR: could not install %s\n",[executablePath cString]);
-   exit (-1);
- } else {
-   fprintf(stdout," installed %s\n",[executablePath cString]);
- } 
-  */
-  infoPath = [destRoot stringByAppendingPathComponent:@"Info.plist"];
+  infoPath = [[self componentPath] stringByAppendingPathComponent:@"Info.plist"];
   {
    NSMutableDictionary *theDict=[NSMutableDictionary dictionary];
    [theDict setObject:[self projectName] forKey:@"NSExecutable"];
    [theDict writeToFile:infoPath atomically:YES];
   }
+
+}
+
+-(void)installBundle;
+{
+  NSFileManager *theMan=[NSFileManager defaultManager];
+  NSString *installDirectory=[self installDirectory];
+  NSString *destRoot;
+
+  if (!installDirectory) {
+    //NSLog(@"no INSTALLDIR set using /usr/GNUstep/Local/Components");
+    installDirectory = @"/usr/GNUstep/Local/Components";
+  }
+
+  [theMan makeRecursiveDirectory:installDirectory];
+  destRoot = [installDirectory stringByAppendingPathComponent:[self componentName]];
+  [theMan removeFileAtPath:destRoot handler:nil];
+  if ([theMan copyPath:[self componentPath] toPath:destRoot handler:nil]==NO) {
+    fprintf(stderr," ERROR: could not install %s\n",[destRoot cString]);
+    exit(-1);
+  } else {
+    fprintf(stdout," installed %s\n",[destRoot cString]);
+  }
+
 }
 
 

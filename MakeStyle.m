@@ -105,7 +105,6 @@
     [arguments addObject:@"-DNFOX_LINUX"];
     [arguments addObject:@"-D__LITTLE_ENDIAN__"];
     [arguments addObject:@"-DGNU_RUNTIME"];
-//    [arguments addObject:@"-v"];
     [arguments addObject:@"-g"];
     [arguments addObject:@"-c"];
     [arguments addObject:@"-objc"];
@@ -113,17 +112,12 @@
     [arguments addObject:outputFile];
     [arguments addObject:@"-Wno-import"];
     [arguments addObject:@"-Wall"];
-//    [arguments addObject:@"-I."];
-//    [arguments addObject:@"-I-"];
     [arguments addObject:@"-I."];
+    // these two are for this project
     [arguments addObject:[NSString stringWithFormat:@"-I%@",[self publicHeaderPath]]];
     [arguments addObject:[NSString stringWithFormat:@"-I%@",[self projectHeaderPath]]];
-    [arguments addObject:@"-I/usr/GNUstep/System/Headers/gnustep/"];
-    [arguments addObject:@"-I/usr/GNUstep/System/Headers/ix86/linux-gnu/"];
-    [arguments addObject:@"-I/usr/GNUstep/Local/Headers"];
-    [arguments addObject:@"-I/usr/GNUstep/Local/Headers/gnustep/"];
-    [arguments addObject:@"-I/usr/GNUstep/Local/Headers/ix86/linux-gnu/"];
-    [arguments addObject:[NSString stringWithFormat:@"-I%@",[self systemHeaderDirectory]]];
+    // this is all the system paths
+    [arguments addObjectsFromArray:[self headerDirectoryFlags]];
 #define BAD_GCC
 #ifdef BAD_GCC
 // The gnu runtime requires that every linked Objective-C file have a unique path when compiled

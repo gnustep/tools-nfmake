@@ -32,56 +32,54 @@
   id userSettings;
 }
 
-+(PBProject *)parse:(NSString *)aPath;
+// For creating a new PBProject subclass instance
++ (PBProject *)parse:(NSString *)aPath;
 
-// "system" configurations
-
--(NSString *)installRoot; /// the root of where to install finished products
-
--(NSString *)systemComponentRoot; // where resuable components go when installed
--(NSString *)systemFrameworkRoot; // where frameworkse go when installed
--(NSString *)systemHeaderDirectory; // where framework headers go on install
--(NSString *)systemSharedLibraryDirectory; // where shared libs go on install
-
-
--(NSString *)rootBuildDirectory;  // a temp place to use for builds
-
--(NSString *)cFlags;  // flags to pass to the compiler
-
-
-// per project values
--(NSString *)projectName;
--(NSString *)outputDirectory;  // root of build output for this project
--(NSString *)compileTargetForSource:(NSString *)sourceFile;  // the .o for a .m
--(NSString *)projectType;
--(NSString *)componentPath;   // where the component is assembled
--(NSString *)executablePath;  // where the executable code is placed
--(NSString *)publicHeaderPath;
--(NSString *)projectHeaderPath;
--(NSString *)resourcePath;
--(NSString *)baseDirectoryPath;
-- (NSString *)buildExtension;
-
-// project cotents
--(NSDictionary *)filesTable;
--(NSArray *)classes;
--(NSArray *)subProjects;
--(NSArray *)subProjectNames;
--(NSArray *)linkables;
-
-
-// this is all frameworks and libraries for a FINAL executable
-- (NSArray *)executableLinkFlags;
-
-// This is frameworks for non final links
-- (NSArray *)frameworkLinkFlags;
-
--(NSArray *)cFlagArray;
+// when we spawn sub tasks, we need to set up their environment
 -(NSDictionary *)subTaskEnvironment;
 
-// Where this project should be installed
+// general build configurations
+- (NSString *)rootBuildDirectory;  // a temp place to use for builds usually ~/spool
+- (NSString *)buildHeaderDirectory; // where framework headers go on default built
+- (NSString *)buildLibraryDirectory; // where framework .so files go on built
+- (NSString *)buildFrameworkDirectory; // where frameworkse go on default built
+- (NSString *)buildComponentDirectory; // where resuable components go when built
+- (NSString *)buildWebObjectsDirectory; // where WebObjects Applications go when built
+
+// Subprojects
+- (NSArray *)subProjects;      // List of PBProject instances for each direct subproject
+- (NSArray *)subProjectNames;  // list of directory names for each direct subproject
+
+// General Project information
+- (NSString *)projectName;
+- (NSString *)buildExtension;
+- (NSDictionary *)filesTable;
+- (NSString *)projectType;
+- (NSString *)baseDirectoryPath;  // The initial directory that they PB.project was in
+
+// Building
+- (NSString *)outputDirectory;  // root of build output for this project
+- (NSString *)compileTargetForSource:(NSString *)sourceFile;  // the .o for a given .m
+- (NSArray *)classes;
+- (NSArray *)linkables;
+- (NSString *)cFlags;  // flags to pass to the compiler
+- (NSString *)publicHeaderPath;    // where to copy this projects "public  headers"
+- (NSString *)projectHeaderPath;   // where to copy this projects "project headers"
+- (NSString *)componentPath;   // where the component is assembled
+- (NSString *)resourcePath;
+- (NSArray *)cFlagArray;
+- (NSArray *)headerDirectoryFlags;  // -I flags
+
+// Linking
+- (NSArray *)executableLinkFlags; // this is all frameworks and libraries for a FINAL executable
+- (NSString *)executablePath;  // where the executable code is placed
+- (NSArray *)frameworkLinkFlags;   // -l flags
+- (NSArray *)libraryDirectoryFlags;  // -L flags
+
+
+// Installing
+- (NSString *)installRoot; /// the root of where to install finished products if none is speced
 - (NSString *)installDirectory;
 
--(NSArray *)libraryDirectoryFlags;
 
 @end

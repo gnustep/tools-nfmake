@@ -82,10 +82,6 @@
   [arguments addObject:[self executablePath]];
   [arguments addObjectsFromArray:[self linkables]];
   [arguments addObjectsFromArray:[self libraryDirectoryFlags]];
-
-  
-  [arguments addObject:[NSString stringWithFormat:@"-L%@",[self systemSharedLibraryDirectory]]];
-
   [arguments addObjectsFromArray:[self executableLinkFlags]];
   [aTask setLaunchPath:@"gcc"];
   [aTask setArguments:arguments];

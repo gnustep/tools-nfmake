@@ -12,7 +12,8 @@
             ComponentStyle.m, 
             BundleStyle.m, 
             ApplicationStyle.m,
-            DocumentApplication.m
+            DocumentApplication.m,
+            NFOXComponentStyle.m
         ); 
         FRAMEWORKS = (Foundation); 
         H_FILES = (
@@ -24,7 +25,9 @@
             PBProject.h, 
             ComponentStyle.h, 
             BundleStyle.h, 
-            ApplicationStyle.h
+            ApplicationStyle.h,
+            DocumentApplication.h,
+            NFOXComponentStyle.h
         ); 
         OTHER_LINKED = (nfmake_main.m); 
         OTHER_SOURCES = (); 

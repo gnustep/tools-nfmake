@@ -1,3 +1,6 @@
+2000-04-04  Karl Kraft <karl@nfox.com>
+        I've started doing an overhaul to deal with distribution issues and multi-architecutres.  You may want to check out a version prior to this one to get something usable.
+
 2000-03-09  Karl Kraft <karl@nfox.com>
         Initial checkin to GNUstep CVS server.  Previously hosted on develop.nfox.com.  ChangeLog entries below this one are extracted from CVS checkin log messages
 

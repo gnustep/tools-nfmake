@@ -23,6 +23,7 @@
 
 #import "PBProject.h"
 #import "NSObject.h"
+#import "NSFileManager_CompareFiles.h"
 
 @implementation PBProject
 
@@ -49,6 +50,7 @@
 }
 
 
+// childList is a list of subprojects
 -(NSMutableArray *)childList;
 {
   if (!childList) {
@@ -62,12 +64,14 @@
   [[self childList] addObject:aProject];
 }
 
+// called if we are a subproject
 - (void)setParentProject:aProject;
 {
   parentProject = [aProject retain];
   [parentProject addChild:self];
 }
 
+// aDict is the actual contents of PB.project
 -(void)setDictionary:(NSDictionary *)aDict;
 {
   if (initialDictionary) {
@@ -87,6 +91,8 @@
   return baseDirectoryPath;
 }
 
+// give the path to a PB.project, finds a suitable subclass to build the project
+// and sets it up for building
 +(PBProject *)parse:(NSString *)aPath;
 {
   id aDict = [NSDictionary dictionaryWithContentsOfFile:aPath];
@@ -101,11 +107,19 @@
   return newProject;
 }
 
+
+/*
+ *  Items returns from the PB.project file
+*/
+
+
+// A dictionary of files (keyed by type) needed to build the project
 -(NSDictionary *)filesTable;
 {
   return [initialDictionary objectForKey:@"FILESTABLE"];
 }
 
+// A list of classes and pseudo class files to compile (typically .c and .m files
 -(NSArray *)classes;
 {
   NSArray *baseArray=[NSArray array];
@@ -115,11 +129,53 @@
   
 }
 
+// A list of strings, each being the name of a directory that contains a subproject
 -(NSArray *)subProjectNames;
 {  
   return [[self filesTable] objectForKey:@"SUBPROJECTS"];
 }
 
+- (NSString *)projectType;
+{
+  return [initialDictionary objectForKey:@"PROJECTTYPE"];
+}
+
+// per project values
+-(NSString *)projectName;
+{
+  return [initialDictionary objectForKey:@"PROJECTNAME"];
+}
+
+- (NSString *)installDirectory;
+{
+  NSString *installDir=[initialDictionary objectForKey:@"INSTALLDIR"];
+  if (installDir) {
+    // TODO - expand out ~ and perhaps $(HOME)
+    return installDir;
+  }
+  return nil;
+}
+
+- (NSString *)buildExtension;
+{
+  return [initialDictionary objectForKey:@"BUNDLE_EXTENSION"];
+}
+
+- (NSString *)installRoot; /// the root of where to install finished products
+{
+	id baseDict = [[NSProcessInfo processInfo] environment];
+	id userSpecifiedPath = [baseDict objectForKey:@"GNUSTEP_BUILD_ROOT"];
+	if (userSpecifiedPath) {
+    return userSpecifiedPath;
+	} else {
+	  return [NSHomeDirectory() stringByAppendingPathComponent:@"spool"];
+  }
+}
+
+/*
+ *  Things created based on the contents of PB.project
+ */
+// returns all the subproject creating them if needed
 -(NSArray *)subProjects;
 {
   if (!childList) {
@@ -145,6 +201,10 @@
   return [self childList];
 }
 
+/*
+ *  Things determined for a specific file
+ */
+// given a source file, provides a path for a .o file
 -(NSString *)compileTargetForSource:(NSString *)classFile;
 {
   NSString *outputFile;
@@ -152,6 +212,7 @@
   return outputFile;
 }
 
+// provides a list of all .o files, even those used by subprojects that should be linked into the final product
 -(NSArray *)linkables;
 {
   NSArray *sourceFiles = [self classes];
@@ -176,51 +237,57 @@
   return outputArray;
 }
 
-- (NSString *)projectType;
+
+- (NSString *)buildComponentDirectory; // where resuable components go when installed
 {
-  return [initialDictionary objectForKey:@"PROJECTTYPE"];
+  static BOOL dirExists=NO;
+  NSString *theDir = [[self installRoot] stringByAppendingPathComponent:@"Components"];
+  if (!dirExists) {
+    [[NSFileManager defaultManager] makeRecursiveDirectory:theDir];
+  } 
+  return theDir;
 }
 
-- (NSString *)installRoot; /// the root of where to install finished products
+- (NSString *)buildWebObjectsDirectory; // where WebObjects Applications go when built
 {
-	id baseDict = [[NSProcessInfo processInfo] environment];
-	id userSpecifiedPath = [baseDict objectForKey:@"NFMAKE_INSTALL_ROOT"];
-	if (userSpecifiedPath) {
-    return userSpecifiedPath;
-	} else {
-	  return [NSHomeDirectory() stringByAppendingPathComponent:@"spool"];
-  }
+  static BOOL dirExists=NO;
+  NSString *theDir = [[self installRoot] stringByAppendingPathComponent:@"WOApps"];
+  if (!dirExists) {
+    [[NSFileManager defaultManager] makeRecursiveDirectory:theDir];
+  } 
+  return theDir;
 }
 
-- (NSString *)systemComponentRoot; // where resuable components go when installed
+- (NSString *)buildFrameworkDirectory; // where resuable components go when installed
 {
-  return [[self installRoot] stringByAppendingPathComponent:@"Components"];
+  static BOOL dirExists=NO;
+  NSString *theDir = [[self installRoot] stringByAppendingPathComponent:@"Frameworks"];
+  if (!dirExists) {
+    [[NSFileManager defaultManager] makeRecursiveDirectory:theDir];
+  } 
+  return theDir;
 }
 
-- (NSString *)systemFrameworkRoot; // where resuable components go when installed
+- (NSString *)buildHeaderDirectory; // where framework headers go on install
 {
-  return [[self installRoot] stringByAppendingPathComponent:@"Frameworks"];
+  static BOOL dirExists=NO;
+  NSString *theDir = [[self installRoot] stringByAppendingPathComponent:@"Headers"];
+  if (!dirExists) {
+    [[NSFileManager defaultManager] makeRecursiveDirectory:theDir];
+  } 
+  return theDir;
 }
 
-- (NSString *)systemHeaderDirectory; // where framework headers go on install
+- (NSString *)buildLibraryDirectory; // where framework headers go on install
 {
-  return [[self systemFrameworkRoot] stringByAppendingPathComponent:@"Headers"];
+  static BOOL dirExists=NO;
+  NSString *theDir = [[self installRoot] stringByAppendingPathComponent:@"lib"];
+  if (!dirExists) {
+    [[NSFileManager defaultManager] makeRecursiveDirectory:theDir];
+  } 
+  return theDir;
 }
 
-- (NSString *)systemSharedLibraryDirectory; // where framework headers go on install
-{
-  return [[self systemFrameworkRoot] stringByAppendingPathComponent:@"lib"];
-}
-
-- (NSString *)installDirectory;
-{
-  NSString *installDir=[initialDictionary objectForKey:@"INSTALLDIR"];
-  if (installDir) {
-    // TODO - expand out ~ and perhasp $(HOME)
-    return installDir;
-  }
-  return nil;
-}
 
 -(NSString *)rootBuildDirectory;  // a temp place to use for builds
 {
@@ -237,11 +304,6 @@
 }
 
 
-// per project values
--(NSString *)projectName;
-{
-  return [initialDictionary objectForKey:@"PROJECTNAME"];
-}
 
 -(NSString *)outputDirectory;  // root of build output for this project
 {
@@ -249,10 +311,6 @@
 }
 
 
-- (NSString *)buildExtension;
-{
-  return [initialDictionary objectForKey:@"BUNDLE_EXTENSION"];
-}
 
 -(NSString *)componentPath;   // where the component is assembled
 {
@@ -394,6 +452,44 @@
     BOOL isDir;
     if ([theMan fileExistsAtPath:theDir isDirectory:&isDir] && isDir) {
 	    [outArray addObject:[NSString stringWithFormat:@"-L%@",theDir]];
+    }
+  }
+  return outArray;
+}
+
+-(NSArray *)headerDirectoryFlags;
+{
+  id theMan = [NSFileManager defaultManager];
+  NSMutableArray *outArray = [NSMutableArray array];
+	id baseDict = [[NSProcessInfo processInfo] environment];
+  NSMutableArray *potentialArray = [NSMutableArray array];
+  int x;
+  NSString *hostPath = [NSString stringWithFormat:@"Headers/%@/%@",
+    [baseDict objectForKey:@"GNUSTEP_HOST_CPU"],
+    [baseDict objectForKey:@"GNUSTEP_HOST_OS"]];
+  [potentialArray addObject:[[baseDict objectForKey:@"GNUSTEP_SYSTEM_ROOT"] stringByAppendingPathComponent:@"Headers"]];
+  [potentialArray addObject:[[baseDict objectForKey:@"GNUSTEP_SYSTEM_ROOT"] stringByAppendingPathComponent:@"Headers/gnustep"]];
+  [potentialArray addObject:[[baseDict objectForKey:@"GNUSTEP_SYSTEM_ROOT"] stringByAppendingPathComponent:hostPath]];
+  
+  [potentialArray addObject:[[baseDict objectForKey:@"GNUSTEP_NETWORK_ROOT"] stringByAppendingPathComponent:@"Headers"]];
+  [potentialArray addObject:[[baseDict objectForKey:@"GNUSTEP_NETWORK_ROOT"] stringByAppendingPathComponent:@"Headers/gnustep"]];
+  [potentialArray addObject:[[baseDict objectForKey:@"GNUSTEP_NETWORK_ROOT"] stringByAppendingPathComponent:hostPath]];
+
+  [potentialArray addObject:[[baseDict objectForKey:@"GNUSTEP_LOCAL_ROOT"] stringByAppendingPathComponent:@"Headers"]];
+  [potentialArray addObject:[[baseDict objectForKey:@"GNUSTEP_LOCAL_ROOT"] stringByAppendingPathComponent:@"Headers/gnustep"]];
+  [potentialArray addObject:[[baseDict objectForKey:@"GNUSTEP_LOCAL_ROOT"] stringByAppendingPathComponent:hostPath]];
+
+  [potentialArray addObject:[[baseDict objectForKey:@"GNUSTEP_BUILD_ROOT"] stringByAppendingPathComponent:@"Headers"]];
+  [potentialArray addObject:[[baseDict objectForKey:@"GNUSTEP_BUILD_ROOT"] stringByAppendingPathComponent:@"Headers/gnustep"]];
+  [potentialArray addObject:[[baseDict objectForKey:@"GNUSTEP_BUILD_ROOT"] stringByAppendingPathComponent:hostPath]];
+
+  
+  x = [potentialArray count];
+  while (x--) {
+    NSString *theDir = [potentialArray objectAtIndex:x];
+    BOOL isDir;
+    if ([theMan fileExistsAtPath:theDir isDirectory:&isDir] && isDir) {
+	    [outArray addObject:[NSString stringWithFormat:@"-I%@",theDir]];
     }
   }
   return outArray;

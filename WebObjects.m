@@ -28,18 +28,20 @@
 
 @implementation WebObjects
 
--(NSString *)componentPath;   // where the component is assembled
+- (NSString *)componentName;
 {
   NSString *extension = [self buildExtension];
   if (extension) {
-    return [NSString stringWithFormat:@"%@/%@.%@",
-             [self outputDirectory],
+    return [NSString stringWithFormat:@"%@.%@",
              [self projectName],extension];
   } else {
-    return [NSString stringWithFormat:@"%@/%@.gswa",
-           [self outputDirectory],
+    return [NSString stringWithFormat:@"%@.gswa",
 	   [self projectName]];
   }
+}
+-(NSString *)componentPath;   // where the component is assembled
+{
+return [[self buildWebObjectsDirectory] stringByAppendingPathComponent:[self componentName]];
 }
 
 +(BOOL)buildsType:(NSString *)aType;
@@ -63,9 +65,6 @@
   [arguments addObject:[self executablePath]];
   [arguments addObjectsFromArray:[self linkables]];
   [arguments addObjectsFromArray:[self libraryDirectoryFlags]];
-  
-  [arguments addObject:[NSString stringWithFormat:@"-L%@",[self systemSharedLibraryDirectory]]];
-
   [arguments addObjectsFromArray:[self executableLinkFlags]];
   [aTask setLaunchPath:@"gcc"];
   [aTask setArguments:arguments];
@@ -202,6 +201,28 @@
   [self installWoComponents];
 }
 
+- (void)install;
+{
+  NSFileManager *theMan=[NSFileManager defaultManager];
+  NSString *installDirectory=[self installDirectory];
+  NSString *destRoot;
+
+  if (!installDirectory) {
+    //NSLog(@"no INSTALLDIR set using /usr/GNUstep/Local/Components");
+    installDirectory = @"/usr/GNUstep/Local/WOApps";
+  }
+
+  [theMan makeRecursiveDirectory:installDirectory];
+  destRoot = [installDirectory stringByAppendingPathComponent:[self componentName]];
+  [theMan removeFileAtPath:destRoot handler:nil];
+  if ([theMan copyPath:[self componentPath] toPath:destRoot handler:nil]==NO) {
+    fprintf(stderr," ERROR: could not install %s\n",[destRoot cString]);
+    exit(-1);
+  } else {
+    fprintf(stdout," installed %s\n",[destRoot cString]);
+  }
+}
+
 -(void)makeTarget:(NSString *)targetName;
 {
   if ([targetName isEqualToString:@"default"]) {
@@ -209,6 +230,8 @@
     [self buildSubprojects:targetName];
     [self buildClasses];
     [self linkFinalProduct];
+  } else if ([targetName isEqualToString:@"install"]) {
+    [self install];
   } else {
     [super makeTarget:targetName];
   }
