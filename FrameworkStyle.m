@@ -49,6 +49,11 @@
   return [[self buildLibraryDirectory] stringByAppendingPathComponent:[NSString stringWithFormat:@"lib%@.so",[self projectName]]];
 }
 
+- (NSString *)staticExecutablePath;
+{
+  return [[self buildLibraryDirectory] stringByAppendingPathComponent:[NSString stringWithFormat:@"lib%@.a",[self projectName]]];
+}
+
 
 - (void)install;
 {
@@ -86,6 +91,9 @@
   [theMan installFromPath:[self sharedExecutablePath] 
                     toDir:destRoot
         operationDelegate:[self copyDelegate]];
+  [theMan installFromPath:[self staticExecutablePath] 
+                    toDir:destRoot
+        operationDelegate:[self copyDelegate]];
 
 
 // install the executable
@@ -100,7 +108,7 @@
   // Languages
 }
 
--(void)linkFinalProduct;
+-(void)linkSharedExecutable;
 {
   NSTask *aTask = [[[NSTask alloc] init] autorelease];
   NSMutableArray *arguments= [NSMutableArray array];
@@ -129,9 +137,43 @@
     exit([aTask terminationStatus]);
   } else {
   }
-
 }
 
+-(void)linkStaticExecutable;
+{
+  NSTask *aTask = [[[NSTask alloc] init] autorelease];
+  NSMutableArray *arguments= [NSMutableArray array];
+  if ([[NSFileManager defaultManager] file:[self staticExecutablePath] isOlderThanFiles:[self linkables]]==NO) {
+
+//    fprintf(stdout,"up to date\n");
+    return;
+  }
+  fprintf(stdout,"===Linking    %s\n",[[self staticExecutablePath] cString]);
+  [arguments addObject:@"r"];
+  [arguments addObject:[self staticExecutablePath]];
+  [arguments addObjectsFromArray:[self linkables]];
+  //[arguments addObjectsFromArray:[self libraryDirectoryFlags]];
+
+  //[arguments addObject:@"-lobjc"];
+//  [arguments addObjectsFromArray:[self frameworkLinkFlags]];
+  [aTask setLaunchPath:@"ar"];
+  [aTask setArguments:arguments];
+  [aTask setEnvironment:[self subTaskEnvironment]];
+  [aTask launch];
+  sleep (30);
+  [aTask waitUntilExit];
+  if ([aTask terminationStatus]!=0) {
+    fprintf(stderr,"Abort\n");
+    exit([aTask terminationStatus]);
+  } else {
+  }
+}
+
+- (void)linkFinalProduct;
+{
+  [self linkSharedExecutable];
+  [self linkStaticExecutable];
+}
 
 -(void)makeTarget:(NSString *)targetName;
 {
