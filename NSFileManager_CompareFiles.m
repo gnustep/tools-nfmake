@@ -197,9 +197,9 @@
 
     if (result==FC_SRC_NEWER) {
       [theMan removeFileAtPath:destPath handler:nil];
-      fprintf(stdout,"===Updating   %s\n",[fileName cString]);
+      fprintf(stdout,"===Updating   %s\n",[destPath cString]);
     } else {
-       fprintf(stdout,"===Copying    %s\n",[fileName cString]);
+       fprintf(stdout,"===Copying    %s\n",[destPath cString]);
     }
 
     if ([theMan copyPath:fileName toPath:destPath handler:nil]==NO) {
@@ -251,10 +251,12 @@
   }
   
   if (sourceIsDir==NO) {
-	  [self updateFiles:[NSArray arrayWithObject:sourcePath]
-	        toDirectory:destDir 
-	  operationDelegate:opDelegate];
-	  return;
+    [self changeCurrentDirectoryPath:sourceDirName];
+    [self updateFiles:[NSArray arrayWithObject:sourceFileName]
+          toDirectory:destDir
+    operationDelegate:opDelegate];
+    [self changeCurrentDirectoryPath:cwd];
+    return;
   }
 
   [self makeRecursiveDirectory:destFileName];
