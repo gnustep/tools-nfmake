@@ -9,6 +9,7 @@
             WebObjectsSubproject.m, 
             NSFileManager_CompareFiles.m, 
             PBProject.m, 
+            ProjectCopyDelegate.m, 
             ComponentStyle.m, 
             BundleStyle.m, 
             ApplicationStyle.m,

@@ -69,29 +69,35 @@
   return FC_IDENTICAL;
 }
 
-static int makeDirectory(NSString *fullPath)
+
+-(void) makeRecursiveDirectory:(NSString *)thePath attributes:(NSDictionary *)aDict;
 {
-  id fileManager=[NSFileManager defaultManager];
   BOOL isDir;
-//NSLog(@"%@",fullPath);
-  if ([fileManager fileExistsAtPath:fullPath isDirectory:&isDir]) {
+  
+  if (!thePath) return;
+  if ([thePath isEqualToString:@"/"]) return;
+  if ([thePath isEqualToString:@"."]) return;
+  if ([thePath isEqualToString:@""]) return;
+
+
+  if ([self fileExistsAtPath:thePath isDirectory:&isDir]) {
     if (isDir) {
-      return 1;
+      return;
     } else {
-      return 0;
+      NSLog(@"Cannot make directory %@, because %@ is a file in the way",thePath);
+      return;
     }
   } else {
-    if (makeDirectory([fullPath stringByDeletingLastPathComponent])) {
-      [fileManager createDirectoryAtPath:fullPath attributes:nil];
-    }
-    return 1;
+      [self makeRecursiveDirectory:[thePath stringByDeletingLastPathComponent] attributes:aDict];
+      //NSLog(@"mkdir %@ %@",thePath,aDict);
+      [self createDirectoryAtPath:thePath attributes:aDict];
   }
 }
-
 -(void) makeRecursiveDirectory:(NSString *)thePath;
-  {
-  makeDirectory(thePath);
-  }
+{
+    NSDictionary *newDict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithLong:0755],NSFilePosixPermissions,nil];
+  [self  makeRecursiveDirectory:thePath attributes:newDict];
+}
 
 -(NSString *)newerFile:(NSString *)file1 :(NSString *)file2;
 {
@@ -148,6 +154,7 @@ static int makeDirectory(NSString *fullPath)
   return retArray;
 }
 
+
 -(void)updateFiles:(NSArray *)fileList toDirectory:(NSString *)theDir operationDelegate:opDelegate;
 {
   id theEnum;
@@ -179,7 +186,7 @@ static int makeDirectory(NSString *fullPath)
       [theMan removeFileAtPath:destPath handler:nil];
       fprintf(stdout,"===Updating   %s\n",[fileName cString]);
     } else {
-      fprintf(stdout,"===Copying    %s\n",[fileName cString]);
+       fprintf(stdout,"===Copying    %s\n",[fileName cString]);
     }
 
     if ([theMan copyPath:fileName toPath:destPath handler:nil]==NO) {
@@ -205,6 +212,24 @@ static int makeDirectory(NSString *fullPath)
 
 - (void)copiedFile:(NSString *)srcFile toDest:(NSString *)destFile;
 {
+}
+
+- (void)installFromPath:(NSString *)sourcePath 
+                  toDir:(NSString *)destDir
+      operationDelegate:opDelegate;
+{
+  NSString *cwd = [self currentDirectoryPath];
+  NSString *sourceFileName = [sourcePath lastPathComponent];
+  NSString *sourceDirName = [sourcePath stringByDeletingLastPathComponent];
+  NSString *destFileName = [destDir stringByAppendingPathComponent:sourceFileName];
+  
+  [self makeRecursiveDirectory:destDir];
+  [self removeFileAtPath:destFileName handler:nil];
+  [self changeCurrentDirectoryPath:sourceDirName];
+  [self updateFiles:[NSArray arrayWithObject:sourceFileName]
+        toDirectory:destDir
+  operationDelegate:opDelegate];
+  [self changeCurrentDirectoryPath:cwd];
 }
 
 @end

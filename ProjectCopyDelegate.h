@@ -1,8 +1,8 @@
 /* 
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 2000 Free Software Foundation, Inc.
    
    Written by:	Karl Kraft <karl@nfox.com>
-   Date: 		Sep 99
+   Date: 		Apr 00
    
    This file is part of nfmake - a utility for building GNUstep programs
    
@@ -22,32 +22,13 @@
 */
 
 #import <Foundation/Foundation.h>
-enum {
-  FC_NO_SRC=0,
-  FC_NO_DEST,
-  FC_SRC_NEWER,
-  FC_DST_NEWER,
-  FC_IDENTICAL
-};
-
-@interface NSFileManager(CompareFiles)
--(int)compareFile:(NSString *)sourceFile andFile:(NSString *)destFile;
--(void)makeRecursiveDirectory:(NSString *)thePath;
--(NSString *)newerFile:(NSString *)aFile :(NSString *)bFile;
--(BOOL)file:(NSString *)linkTarget isOlderThanFiles:(NSArray *)dependancies;
 
 
-
-
--(void)updateFiles:(NSArray *)fileList toDirectory:(NSString *)theDir;
--(void)updateFiles:(NSArray *)fileList toDirectory:(NSString *)theDir operationDelegate:opDelegate;
+@interface ProjectCopyDelegate:NSObject
+{
+}
 
 - (BOOL)shouldCopyFile:(NSString *)srcFile toDest:(NSString *)destFile;
 - (void)copiedFile:(NSString *)srcFile toDest:(NSString *)destFile;
-
-
-- (void)installFromPath:(NSString *)sourcePath 
-                  toDir:(NSString *)destDir
-      operationDelegate:opDelegate;
 
 @end

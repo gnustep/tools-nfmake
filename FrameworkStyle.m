@@ -50,51 +50,6 @@
 }
 
 
-- (void)installLibrary;
-{
-// install the library
-// the headers
-// the resources
-/*  id theMan=[NSFileManager defaultManager];
-  NSString *destRoot=[self finalExecutablePath];
-  [theMan makeRecursiveDirectory:[self systemSharedLibraryDirectory]];
-  [theMan removeFileAtPath:destRoot handler:nil];
-  if ([theMan copyPath:[self sharedExecutablePath] toPath:destRoot handler:nil]==NO) {
-    fprintf(stderr," ERROR: could not install %s\n",[destRoot cString]);
-    exit(-1);
-  } else {
-    fprintf(stdout," installed %s\n",[destRoot cString]);
-  }
-  */
-}
-
--(void)installBundle;
-{
-/*
-  id theMan=[NSFileManager defaultManager];
-
- destRoot = [destRoot stringByAppendingPathComponent:[self projectName]];
- destRoot=[destRoot stringByAppendingPathExtension:@"framework"];
- [theMan removeFileAtPath:destRoot handler:nil];
- if ([theMan copyPath:[self componentPath] toPath:destRoot handler:nil]==NO) {
-   fprintf(stderr," ERROR: could not install %s\n",[destRoot cString]);
-    exit(-1);
- } else {
-   fprintf(stdout," installed %s\n",[destRoot cString]);
- }
-
- destRoot=[self buildHeaderDirectory];
- destRoot = [destRoot stringByAppendingPathComponent:[self projectName]];
-  [theMan removeFileAtPath:destRoot handler:nil];
-  if ([theMan copyPath:[self publicHeaderPath] toPath:destRoot handler:nil]==NO) {
-    fprintf(stderr," ERROR: could not install %s\n",[destRoot cString]);
-    exit(-1);
-  } else {
-    fprintf(stdout," installed %s\n",[destRoot cString]);
-  }
-*/
-}
-
 - (void)install;
 {
   NSFileManager *theMan=[NSFileManager defaultManager];
@@ -109,17 +64,14 @@
 
 // Install the headers
   destRoot = [installDirectory stringByAppendingPathComponent:@"Headers"];
-  [theMan makeRecursiveDirectory:destRoot];
 
-  destRoot = [destRoot stringByAppendingPathComponent:[self projectName]];
-  [theMan removeFileAtPath:destRoot handler:nil];
+  fprintf(stdout,"Installing to %s\n",[[self publicHeaderPath] cString]);
+  [theMan installFromPath:[self publicHeaderPath] 
+                    toDir:destRoot 
+        operationDelegate:[self copyDelegate]];
 
-  if ([theMan copyPath:[self publicHeaderPath] toPath:destRoot handler:nil]==NO) {
-    fprintf(stderr," ERROR: could not install %s\n",[destRoot cString]);
-    exit(-1);
-  } else {
-    fprintf(stdout," installed %s\n",[destRoot cString]);
-  }
+
+
 
 // Install the executable lib
   destRoot = [installDirectory stringByAppendingPathComponent:@"Libraries"];
@@ -129,17 +81,11 @@
     [environDict objectForKey:@"GNUSTEP_HOST_OS"]];
   destRoot = [destRoot stringByAppendingPathComponent:
     [environDict objectForKey:@"LIBRARY_COMBO"]];
-  [theMan makeRecursiveDirectory:destRoot];
 
-  destRoot = [destRoot stringByAppendingPathComponent:[NSString stringWithFormat:@"lib%@.so",[self projectName]]];
-  [theMan removeFileAtPath:destRoot handler:nil];
-
-  if ([theMan copyPath:[self sharedExecutablePath] toPath:destRoot handler:nil]==NO) {
-    fprintf(stderr," ERROR: could not install %s\n",[destRoot cString]);
-    exit(-1);
-  } else {
-    fprintf(stdout," installed %s\n",[destRoot cString]);
-  }
+  fprintf(stdout,"Installing to %s\n",[destRoot cString]);
+  [theMan installFromPath:[self sharedExecutablePath] 
+                    toDir:destRoot
+        operationDelegate:[self copyDelegate]];
 
 
 // install the executable
@@ -163,7 +109,7 @@
 //    fprintf(stdout,"up to date\n");
     return;
   }
-  fprintf(stdout,"Creating shared library for framework\n");
+  fprintf(stdout,"===Linking    %s\n",[[self sharedExecutablePath] cString]);
   [arguments addObject:@"-shared"];
   [arguments addObject:@"-o"];
   [arguments addObject:[self sharedExecutablePath]];

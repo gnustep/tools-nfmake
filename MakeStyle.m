@@ -26,6 +26,7 @@
 #import "MakeStyle.h"
 #import "NSObject.h"
 #import "NSFileManager_CompareFiles.h"
+#import "ProjectCopyDelegate.h"
 
 
 #define PROJECT_TYPE @"PROJECTTYPE"
@@ -200,5 +201,10 @@
 [theMan  removeFileAtPath: [self outputDirectory]
 		  handler: nil];
 }
+- copyDelegate;
+{
+  return [[[ProjectCopyDelegate alloc] init] autorelease];
+}
+
 
 @end

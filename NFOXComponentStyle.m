@@ -99,22 +99,16 @@ return [[self buildComponentDirectory] stringByAppendingPathComponent:[self comp
 {
   NSFileManager *theMan=[NSFileManager defaultManager];
   NSString *installDirectory=[self installDirectory];
-  NSString *destRoot;
 
   if (!installDirectory) {
     //NSLog(@"no INSTALLDIR set using /usr/GNUstep/Local/Components");
     installDirectory = @"/usr/GNUstep/Local/Components";
   }
 
-  [theMan makeRecursiveDirectory:installDirectory];
-  destRoot = [installDirectory stringByAppendingPathComponent:[self componentName]];
-  [theMan removeFileAtPath:destRoot handler:nil];
-  if ([theMan copyPath:[self componentPath] toPath:destRoot handler:nil]==NO) {
-    fprintf(stderr," ERROR: could not install %s\n",[destRoot cString]);
-    exit(-1);
-  } else {
-    fprintf(stdout," installed %s\n",[destRoot cString]);
-  }
+  fprintf(stdout,"Installing to %s\n",[installDirectory cString]);
+  [theMan installFromPath:[self componentPath] 
+                    toDir:installDirectory
+        operationDelegate:[self copyDelegate]];
 
 }
 

@@ -38,4 +38,7 @@
 - (void)removeBuildArea;
 - (void)makeTarget:(NSString *)targetName;
 
+
+- copyDelegate;
+
 @end

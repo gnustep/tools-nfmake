@@ -39,6 +39,7 @@
 {
   NSTask *aTask = [[[NSTask alloc] init] autorelease];
   NSMutableArray *arguments= [NSMutableArray array];
+  NSString *infoPath;
 
   if ([[NSFileManager defaultManager] file:[self executablePath] isOlderThanFiles:[self linkables]]==NO) {
 
@@ -70,39 +71,23 @@
     exit([aTask terminationStatus]);
   } else {
   }
-}
-
--(void)installBundle;
-{
-  id theMan=[NSFileManager defaultManager];
-  NSString *destRoot=[self buildComponentDirectory];
-
-  NSString *infoPath;
-
-  destRoot = [destRoot stringByAppendingPathComponent:[self projectName]];
-  destRoot=[destRoot stringByAppendingPathExtension:[self buildExtension]];
-  [theMan removeFileAtPath:destRoot handler:nil];
-  if ([theMan copyPath:[self componentPath] toPath:destRoot handler:nil]==NO) {
-   fprintf(stderr," ERROR: could not install bundle %s\n",[destRoot cString]);
-   exit (-1);
- } else {
-   fprintf(stdout," installed %s\n",[destRoot cString]);
- }
-  
-  /* executablePath = [destRoot stringByAppendingPathComponent:[self projectName]];
-  if ([theMan copyPath:[self executablePath] toPath:executablePath handler:nil]==NO) {
-   fprintf(stderr," ERROR: could not install %s\n",[executablePath cString]);
-   exit (-1);
- } else {
-   fprintf(stdout," installed %s\n",[executablePath cString]);
- } 
-  */
-  infoPath = [destRoot stringByAppendingPathComponent:@"Info.plist"];
+  infoPath = [[[self executablePath] stringByDeletingLastPathComponent] stringByAppendingPathComponent:@"Info.plist"];
   {
    NSMutableDictionary *theDict=[NSMutableDictionary dictionary];
    [theDict setObject:[self projectName] forKey:@"NSExecutable"];
    [theDict writeToFile:infoPath atomically:YES];
   }
+}
+
+-(void)installBundle;
+{
+  id theMan=[NSFileManager defaultManager];
+
+  fprintf(stdout,"Installing to %s\n",[[self buildComponentDirectory] cString]);
+  [theMan installFromPath:[self componentPath] 
+                    toDir:[self buildComponentDirectory]
+        operationDelegate:[self copyDelegate]];
+
 }
 
 

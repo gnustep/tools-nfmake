@@ -110,55 +110,38 @@
   return [[self installDirectory] stringByAppendingPathComponent:[self projectName]];
 }
 
-- (NSString *)installedResourcePath;
+- (NSString *)installedResourceDirectory;
 {
   NSString *aString=[self installDirectory];
   aString=[aString stringByAppendingPathComponent:@"Reources"];
-  aString=[aString stringByAppendingPathComponent:[self projectName]];
   return aString;
   
 }
 
 
+- (NSString *)installedResourcePath;
+{
+  NSString *aString=[self installedResourceDirectory];
+  aString=[aString stringByAppendingPathComponent:[self projectName]];
+  return aString;
+  
+}
+
 - (void)installFinalProduct;
 {
-  NSTask *aTask = [[[NSTask alloc] init] autorelease];
-  NSMutableArray *arguments= [NSMutableArray array];
-  
-  fprintf(stdout,"Installing %s to %s\n",[[self executablePath] cString],[[self installedExecutablePath] cString]); fflush(stdout);
-  [arguments addObject:@"-D"];
-  [arguments addObject:[self executablePath]];
-  [arguments addObject:[self installedExecutablePath]];
-  [aTask setLaunchPath:@"install"];
-  [aTask setArguments:arguments];
-  [aTask setEnvironment:[self subTaskEnvironment]];
-  [aTask launch];
-  sleep (30);
-  [aTask waitUntilExit];
-  if ([aTask terminationStatus]!=0) {
-    fprintf(stderr,"Abort\n");
-    exit([aTask terminationStatus]);
-  }
+  NSFileManager *theMan=[NSFileManager defaultManager];
 
-  aTask = [[[NSTask alloc] init] autorelease];
-  arguments= [NSMutableArray array];
-  fprintf(stdout,"Installing %s to %s\n",[[self resourcePath] cString],[[self installedResourcePath] cString]); fflush(stdout);
-  [arguments addObject:@"-d"];
-  [arguments addObject:@"-D"];
-  [arguments addObject:[self resourcePath]];
-  [arguments addObject:[self installedResourcePath]];
-  [aTask setLaunchPath:@"install"];
-  [aTask setArguments:arguments];
-  [aTask setEnvironment:[self subTaskEnvironment]];
-  [aTask launch];
-  //sleep (30);
-  [aTask waitUntilExit];
-  if ([aTask terminationStatus]!=0) {
-    fprintf(stderr,"Abort\n");
-    exit([aTask terminationStatus]);
-  }
 
-  
+  fprintf(stdout,"Installing %s\n",[[self installedExecutablePath] cString]);
+  [theMan installFromPath:[self executablePath] 
+                    toDir:[self installDirectory] 
+        operationDelegate:[self copyDelegate]];
+
+  fprintf(stdout,"Installing %s\n",[[self installedResourcePath] cString]);
+  [theMan installFromPath:[self resourcePath] 
+                    toDir:[self installedResourceDirectory] 
+        operationDelegate:[self copyDelegate]];
+
 }
 
 
