@@ -70,7 +70,7 @@
 // Install the headers
   destRoot = [installDirectory stringByAppendingPathComponent:@"Headers"];
 
-  fprintf(stdout,"Installing to %s\n",[[self publicHeaderPath] cString]);
+//  fprintf(stdout,"Installing Headers to %s\n",[destRoot cString]);
   [theMan installFromPath:[self publicHeaderPath] 
                     toDir:destRoot 
         operationDelegate:[self copyDelegate]];
@@ -87,10 +87,12 @@
   destRoot = [destRoot stringByAppendingPathComponent:
     [environDict objectForKey:@"LIBRARY_COMBO"]];
 
-  fprintf(stdout,"Installing to %s\n",[destRoot cString]);
+  //fprintf(stdout,"Installing shared library to %s\n",[destRoot cString]);
   [theMan installFromPath:[self sharedExecutablePath] 
                     toDir:destRoot
         operationDelegate:[self copyDelegate]];
+
+  //fprintf(stdout,"Installing static library to %s\n",[destRoot cString]);
   [theMan installFromPath:[self staticExecutablePath] 
                     toDir:destRoot
         operationDelegate:[self copyDelegate]];

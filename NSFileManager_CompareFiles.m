@@ -27,6 +27,17 @@
 
 @implementation NSFileManager(compareFiles)
 
+- (NSArray*) recursiveDirectoryContentsAtPath: (NSString*)path;
+{
+  id theEnum = [self enumeratorAtPath:path];
+  id theFile;
+  NSMutableArray *theArray = [NSMutableArray array];
+  while (theFile = [theEnum nextObject]) {
+    [theArray addObject:theFile];
+  }
+  //NSLog(@"%@",theArray);
+  return theArray;
+}
 
 -(int)compareFile:(NSString *)sourceFile andFile:(NSString *)destFile;
 {
@@ -155,6 +166,8 @@
 }
 
 
+// This brings any missing files up to date.  Any files in the destination that don't exist in the
+// source are left in place.
 -(void)updateFiles:(NSArray *)fileList toDirectory:(NSString *)theDir operationDelegate:opDelegate;
 {
   id theEnum;
@@ -214,7 +227,9 @@
 {
 }
 
-- (void)installFromPath:(NSString *)sourcePath 
+// sourcePath is update to destDir.  If sourcePath is a directory, then
+// out of date files are updated, excess files are deleted.
+- (void)installFromPath:(NSString *)sourcePath
                   toDir:(NSString *)destDir
       operationDelegate:opDelegate;
 {
@@ -222,9 +237,43 @@
   NSString *sourceFileName = [sourcePath lastPathComponent];
   NSString *sourceDirName = [sourcePath stringByDeletingLastPathComponent];
   NSString *destFileName = [destDir stringByAppendingPathComponent:sourceFileName];
+  BOOL sourceIsDir;
+  BOOL fileAvailable = [self fileExistsAtPath:sourcePath isDirectory:&sourceIsDir];
+  int x;
   
+  NSArray *sourceList;
+  NSArray *destList;
+  
+
+  if (!fileAvailable) {
+    NSLog(@"File %@ is not available for installing",sourcePath);
+    return;
+  }
+  
+  if (sourceIsDir==NO) {
+	  [self updateFiles:[NSArray arrayWithObject:sourcePath]
+	        toDirectory:destDir 
+	  operationDelegate:opDelegate];
+	  return;
+  }
+
+  sourceList = [self recursiveDirectoryContentsAtPath:sourcePath];
+  destList = [self recursiveDirectoryContentsAtPath:destFileName];
+
+// anything in the source List that wasn't in destList?
+// if so delete it    
+  x= [destList count];
+  while (x--) {
+    id theFile = [destList objectAtIndex:x];
+    unsigned theLocation = [sourceList indexOfObject:theFile];
+    if (theLocation == NSNotFound) {
+      NSString *destFile = [NSString stringWithFormat:@"%@/%@",destFileName,theFile];
+      fprintf(stdout,"===Removing   %s\n",[destFile cString]);
+      [self removeFileAtPath:destFile handler:nil];
+    }
+  }
+
   [self makeRecursiveDirectory:destDir];
-  [self removeFileAtPath:destFileName handler:nil];
   [self changeCurrentDirectoryPath:sourceDirName];
   [self updateFiles:[NSArray arrayWithObject:sourceFileName]
         toDirectory:destDir
