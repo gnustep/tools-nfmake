@@ -226,6 +226,7 @@ return [[self buildWebObjectsDirectory] stringByAppendingPathComponent:[self com
     [self buildClasses];
     [self linkFinalProduct];
   } else if ([targetName isEqualToString:@"install"]) {
+    [self makeTarget:@"default"];
     [self install];
   } else {
     [super makeTarget:targetName];
