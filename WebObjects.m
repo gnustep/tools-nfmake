@@ -58,6 +58,8 @@ return [[self buildWebObjectsDirectory] stringByAppendingPathComponent:[self com
   NSTask *aTask = [[[NSTask alloc] init] autorelease];
   NSMutableArray *arguments= [NSMutableArray array];
 
+  if ([[NSFileManager defaultManager] file:[self executablePath] isOlderThanFiles:[self linkables]]==NO) return;
+
   fprintf(stdout,"Linking %s\n",[[self executablePath] cString]); fflush(stdout);
 
   [arguments addObjectsFromArray:[self cFlagArray]];
