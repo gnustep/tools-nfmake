@@ -257,6 +257,7 @@
 	  return;
   }
 
+  [self makeRecursiveDirectory:destFileName];
   sourceList = [self recursiveDirectoryContentsAtPath:sourcePath];
   destList = [self recursiveDirectoryContentsAtPath:destFileName];
 
@@ -273,7 +274,6 @@
     }
   }
 
-  [self makeRecursiveDirectory:destDir];
   [self changeCurrentDirectoryPath:sourceDirName];
   [self updateFiles:[NSArray arrayWithObject:sourceFileName]
         toDirectory:destDir
