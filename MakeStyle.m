@@ -118,8 +118,11 @@
     [arguments addObject:@"-I."];
     [arguments addObject:[NSString stringWithFormat:@"-I%@",[self publicHeaderPath]]];
     [arguments addObject:[NSString stringWithFormat:@"-I%@",[self projectHeaderPath]]];
-    [arguments addObject:@"-I/usr/GNUstep/Headers/gnustep/"];
-    [arguments addObject:@"-I/usr/GNUstep/Headers/ix86/linux-gnu/"];
+    [arguments addObject:@"-I/usr/GNUstep/System/Headers/gnustep/"];
+    [arguments addObject:@"-I/usr/GNUstep/System/Headers/ix86/linux-gnu/"];
+    [arguments addObject:@"-I/usr/GNUstep/Local/Headers"];
+    [arguments addObject:@"-I/usr/GNUstep/Local/Headers/gnustep/"];
+    [arguments addObject:@"-I/usr/GNUstep/Local/Headers/ix86/linux-gnu/"];
     [arguments addObject:[NSString stringWithFormat:@"-I%@",[self systemHeaderDirectory]]];
 #define BAD_GCC
 #ifdef BAD_GCC

@@ -62,7 +62,7 @@
   [arguments addObject:@"-o"];
   [arguments addObject:[self executablePath]];
   [arguments addObjectsFromArray:[self linkables]];
-  [arguments addObject:@"-L/usr/GNUstep/Libraries/machine/"];
+  [arguments addObjectsFromArray:[self libraryDirectoryFlags]];
   
   [arguments addObject:[NSString stringWithFormat:@"-L%@",[self systemSharedLibraryDirectory]]];
 

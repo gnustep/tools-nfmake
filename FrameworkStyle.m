@@ -108,7 +108,7 @@ NSString *destRoot=[self systemFrameworkRoot];
   [arguments addObject:@"-o"];
   [arguments addObject:[self sharedExecutablePath]];
   [arguments addObjectsFromArray:[self linkables]];
-  [arguments addObject:@"-L/usr/GNUstep/Libraries/machine/"];
+  [arguments addObjectsFromArray:[self libraryDirectoryFlags]];
   [arguments addObject:[NSString stringWithFormat:@"-L%@",[self systemSharedLibraryDirectory]]];
 
   //[arguments addObject:@"-lobjc"];

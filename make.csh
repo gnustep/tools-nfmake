@@ -35,9 +35,17 @@ foreach i (*.m)
  goto done
 build:
  echo "  compile"
- cc -g -DGNU_RUNTIME -c -o $target -Wno-import -I. -I/usr/GNUstep/Headers/gnustep/ -I/usr/GNUstep/Headers/ix86/linux-gnu/ $i 
+ cc -g -DGNU_RUNTIME -c -o $target -Wno-import \
+  -I. \
+  -I/usr/GNUstep/System/Headers/gnustep/ \
+  -I/usr/GNUstep/System/Headers/ix86/linux-gnu/ \
+  $i 
 done:
 end
 
-cc -g -o nfmake_boot obj/*.o -L/usr/GNUstep/Libraries/machine/ -lgnustep-base -lobjc -lpthread
+cc -g -o nfmake_boot obj/*.o \
+  -L/usr/GNUstep/System/Libraries/ix86/linux-gnu/gnu-gnu-gnu-xgps/ \
+  -lgnustep-base \
+  -lobjc \
+  -lpthread
 

@@ -212,9 +212,14 @@
   return [[self systemFrameworkRoot] stringByAppendingPathComponent:@"lib"];
 }
 
-- (NSString *)systemExecutableDirectory;
+- (NSString *)installDirectory;
 {
-  return [NSHomeDirectory() stringByAppendingPathComponent:@"Unix/bin"];
+  NSString *installDir=[initialDictionary objectForKey:@"INSTALLDIR"];
+  if (installDir) {
+    // TODO - expand out ~ and perhasp $(HOME)
+    return installDir;
+  }
+  return nil;
 }
 
 -(NSString *)rootBuildDirectory;  // a temp place to use for builds
@@ -372,7 +377,27 @@
 {
 	id baseDict = [[NSProcessInfo processInfo] environment];
 	id theDict = [NSMutableDictionary dictionaryWithDictionary:baseDict];
-	[theDict setObject:[self systemSharedLibraryDirectory] forKey:@"LD_LIBRARY_PATH"];
+	[theDict setObject:[baseDict objectForKey:@"LD_LIBRARY_PATH"] forKey:@"LD_LIBRARY_PATH"];
 	return theDict;
 }
+
+-(NSArray *)libraryDirectoryFlags;
+{
+	id baseDict = [[NSProcessInfo processInfo] environment];
+  id thePathList = [baseDict objectForKey:@"LD_LIBRARY_PATH"];
+  id pathParts = [thePathList componentsSeparatedByString:@":"];
+  id theMan = [NSFileManager defaultManager];
+  NSMutableArray *outArray = [NSMutableArray array];
+  int x = [pathParts count];
+  while (x--) {
+    NSString *theDir = [pathParts objectAtIndex:x];
+    BOOL isDir;
+    if ([theMan fileExistsAtPath:theDir isDirectory:&isDir] && isDir) {
+	    [outArray addObject:[NSString stringWithFormat:@"-L%@",theDir]];
+    }
+  }
+  return outArray;
+}
+
+
 @end

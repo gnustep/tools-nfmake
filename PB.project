@@ -1,5 +1,4 @@
 {
-    DYNAMIC_CODE_GEN = YES; 
     FILESTABLE = {
         CLASSES = (
             FrameworkStyle.m, 
@@ -15,8 +14,7 @@
             ApplicationStyle.m,
             DocumentApplication.m
         ); 
-        FRAMEWORKS = (Foundation.framework); 
-        FRAMEWORKSEARCH = ("C:\\spool\\frameworks"); 
+        FRAMEWORKS = (Foundation); 
         H_FILES = (
             FrameworkStyle.h, 
             MakeStyle.h, 
@@ -29,34 +27,14 @@
             ApplicationStyle.h
         ); 
         OTHER_LINKED = (nfmake_main.m); 
-        OTHER_SOURCES = (Makefile.preamble, Makefile, Makefile.postamble, m.template, h.template); 
+        OTHER_SOURCES = (); 
         PRECOMPILED_HEADERS = (); 
         PROJECT_HEADERS = (); 
         PUBLIC_HEADERS = (); 
     }; 
-    GNUSTEP_BUILDDIR = /spool/; 
-    GNUSTEP_BUILDTOOL = nfmake; 
-    GNUSTEP_INSTALLDIR = /nfox/Products/Developer/bin; 
-    GNUSTEP_JAVA_COMPILER = javac; 
-    GNUSTEP_OBJCPLUS_COMPILER = nfmake; 
+    INSTALLDIR = /usr/GNUstep/System/Tools/; 
     LANGUAGE = English; 
-    MAKEFILEDIR = "$(MAKEFILEPATH)/pb_makefiles"; 
-    NEXTSTEP_BUILDDIR = /spool/nfox/dev; 
-    NEXTSTEP_BUILDTOOL = gnumake; 
-    NEXTSTEP_INSTALLDIR = /spool/dev; 
-    NEXTSTEP_JAVA_COMPILER = /usr/bin/javac; 
-    NEXTSTEP_OBJCPLUS_COMPILER = /usr/bin/cc; 
-    PDO_UNIX_BUILDDIR = /spool/nfox/dev; 
-    PDO_UNIX_BUILDTOOL = gnumake; 
-    PDO_UNIX_INSTALLDIR = /spool/dev; 
-    PDO_UNIX_JAVA_COMPILER = "$(JDKBINDIR)/javac"; 
-    PDO_UNIX_OBJCPLUS_COMPILER = "$(NEXTDEV_BIN)/gcc"; 
     PROJECTNAME = nfmake; 
     PROJECTTYPE = Tool; 
     PROJECTVERSION = 2.8; 
-    WINDOWS_BUILDDIR = "c:/spool/nfox/dev"; 
-    WINDOWS_BUILDTOOL = gnumake; 
-    WINDOWS_INSTALLDIR = "c:/spool/dev"; 
-    WINDOWS_JAVA_COMPILER = "$(JDKBINDIR)/javac.exe"; 
-    WINDOWS_OBJCPLUS_COMPILER = "$(DEVDIR)/gcc"; 
 }

@@ -78,6 +78,10 @@
 
 -(NSArray *)cFlagArray;
 -(NSDictionary *)subTaskEnvironment;
-- (NSString *)systemExecutableDirectory;
+
+// Where this project should be installed
+- (NSString *)installDirectory;
+
+-(NSArray *)libraryDirectoryFlags;
 
 @end

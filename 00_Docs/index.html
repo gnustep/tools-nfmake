@@ -4,62 +4,69 @@
 	<TITLE>NFMake</TITLE>
 	<META NAME="GENERATOR" CONTENT="StarOffice/5.1 (Linux)">
 	<META NAME="CREATED" CONTENT="20000105;15273400">
-	<META NAME="CHANGEDBY" CONTENT="Smart Gateway">
-	<META NAME="CHANGED" CONTENT="20000105;16500900">
-	
-<BODY LEFTMARGIN="0" MARGINWIDTH="0" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#CC0000" VLINK="#333333" ALINK="#FF0000">
-
-
-	
-
-
-
-	<a href="http://www.karl.nfox.com/"><img border=0 alt="NFOX.COM" height=85 width=285 src="logo.gif"></a></center>
-
-	
-	
-<table border="0" width="100%" cellspacing="0" cellpadding="20">
-
-<tr>
-
-<td width="100%">
-
-
+	<META NAME="CHANGEDBY" CONTENT="Karl Kraft">
+	<META NAME="CHANGED" CONTENT="20000404;12265900">
+	<STYLE>
+	<!--
+		H1 { color: #000000 }
+		TH P { color: #000000 }
+		TD P { color: #000000 }
+		H2 { color: #000000 }
+		P { color: #000000 }
+		A:link { color: #cc0000 }
+		A:visited { color: #333333 }
+	-->
+	</STYLE>
 </HEAD>
-<BODY>
+<BODY TEXT="#000000" LINK="#cc0000" VLINK="#333333" BGCOLOR="#ffffff">
+<P STYLE="margin-bottom: 0in"><A HREF="http://www.karl.nfox.com/"><IMG SRC="logo.gif" NAME="Graphic1" ALT="NFOX.COM" ALIGN=BOTTOM WIDTH=285 HEIGHT=85 BORDER=0></A>
+</P>
 <P><BR><BR>
 </P>
-<H1>NFMake</H1>
-<P>NFMake is a tool for building OpenStep projects on GNUstep. It was
-designed to parse a PB.project file directly instead of having to
-maintain parallel makefiles. 
-</P>
+<H1>NFMake v 0.2</H1>
+<P>NFMake was created as a tool for building OpenStep projects on
+GNUstep. It was designed to parse a PB.project file directly instead
+of having to maintain parallel makefiles. The eventual goal is to
+have nfmake part of a larger development package that deals with
+building the project directly instead of handing off the job to make.</P>
 <P>While it is nowhere near complete, it is good enough for us to use
 on a daily basis for building frameworks, tools, bundles, and the
-sort. It does need more work, and I update it often internally. 
+sort. We have ceased using Makefiles and make, and simply edit the
+PB.project files, which are in a standard plist format. 
 </P>
-
-<H2>Building</H2>
+<H2>Major Changes</H2>
+<P STYLE="margin-left: 0.79in"><B>v 0.2 - first actual numbered
+version</B></P>
+<UL>
+	<LI><P>Uses LD_LIBRARY_PATH envirnoment variable for creating -L
+	flags to the compiler</P>
+	<LI><P>Deal with multi-architecture. We use this to build on both
+	RedHat 6.2 / x86 and LinuxPPC</P>
+</UL>
+<P STYLE="margin-left: 0.79in"><B>v 0.1 - Not numbered - Added to
+GNUstep</B></P>
+<P><B>Creating a PB.project file for a new project</B></P>
+<P><B>&lt;&lt; TO DO&gt;&gt;</B></P>
+<P><B>About our project layout philosophy.</B></P>
+<P><B>// eventuall go is set it yourself</B></P>
+<P><B>// right now not as flexible, so you may want to follow our
+scheme</B></P>
+<P><B>// System overridden by network</B></P>
+<P><B>// network overridden by local</B></P>
+<P><B>// that overridden by the user</B></P>
+<P><B>// what all these paths mean</B></P>
+<H2>Building nfmake</H2>
 <OL>
-	<LI><P>As provided the source build everything into ~/spool If this
-	directory doesn't exist, you will probably need to create it as
-	root. This is a temporary solution and will be changing in a later
-	release. If you have a better choice, you can change the single line
-	in PBProject.m that refers to ~/spool.</P>
-	<LI><P>Installed frameworks end up in ~/spool/Frameworks/lib. You
-	will probably need to set the environment variable <CODE>LD_LIBRARY_PATH</CODE>
-	to recognize this location.</P>
-	<LI><P>We create a link in /usr/GNUstep/Libraries from <CODE><SPAN STYLE="font-style: normal">machine</SPAN></CODE>
-	to <CODE><SPAN STYLE="font-style: normal">ix86/linux-gnu/gnu-gnu-gnu-xgps</SPAN></CODE></P>
-	<LI><P>In the nfmake directory execute <CODE>make.sh</CODE>. This is
-	a simple shell script to compile all the .m files. The result is an
-	executable called nfmake_boot. This is a fully executable copy of
-	nfmake. 
-	</P>
-	<LI><P>To test that nfmake can make itself, type <CODE>nfmake_boot
-	install</CODE>.<BR>This will build nfmake and install the executable
-	in ~/Unix/bin/ <br><B>KNOWN BUG: ~/Unix/bin/ must exist before you do the install.</B></P>
-	<LI><P>Test it out on various projects.</P>
+	<LI><P>As provided the source build everything into ~/spool. This
+	directory will be created if it doesn't exist. This will be
+	configurable in a later release. If this causes problems, a quick
+	fix is to change the single line in PBProject.m that refers to
+	~/spool. This should eventually be configurable by NFMAKERC</P>
+	<LI><P>// setup your cshrc appropriately</P>
+	<LI><P>// make sure that certain environment variables are set</P>
+	<LI><P>run make.csh</P>
+	<LI><P>nfmake_boot install</P>
+	<LI><P>test it out on various projects</P>
 </OL>
 <H2>How it works</H2>
 <OL>
@@ -75,9 +82,121 @@ sort. It does need more work, and I update it often internally.
 	<LI><P>Once an appropriate subclass has been found, the command line
 	arguments are passed to <CODE>-makeTarget:</CODE></P>
 </OL>
+<H2>Cool Things</H2>
+<P><BR><BR>
+</P>
 <H2>What works</H2>
-<P>Builds tools, applications, frameworks, bundles, subprojects, web
-object applications. Frameworks and tools can be &quot;installed&quot;
+<TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3>
+	<COL WIDTH=51*>
+	<COL WIDTH=51*>
+	<COL WIDTH=51*>
+	<COL WIDTH=102*>
+	<THEAD>
+		<TR VALIGN=TOP>
+			<TH WIDTH=20%>
+				<P><BR>
+				</P>
+			</TH>
+			<TH WIDTH=20%>
+				<P>Builds</P>
+			</TH>
+			<TH WIDTH=20%>
+				<P>Installs</P>
+			</TH>
+			<TH WIDTH=40%>
+				<P>Notes</P>
+			</TH>
+		</TR>
+	</THEAD>
+	<TBODY>
+		<TR VALIGN=TOP>
+			<TD WIDTH=20%>
+				<P>Application</P>
+			</TD>
+			<TD WIDTH=20%>
+				<P><BR>
+				</P>
+			</TD>
+			<TD WIDTH=20%>
+				<P><BR>
+				</P>
+			</TD>
+			<TD WIDTH=40%>
+				<P><BR>
+				</P>
+			</TD>
+		</TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=20%>
+				<P>Frameworks</P>
+			</TD>
+			<TD WIDTH=20%>
+				<P><BR>
+				</P>
+			</TD>
+			<TD WIDTH=20%>
+				<P><BR>
+				</P>
+			</TD>
+			<TD WIDTH=40%>
+				<P><BR>
+				</P>
+			</TD>
+		</TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=20%>
+				<P>Bundles</P>
+			</TD>
+			<TD WIDTH=20%>
+				<P><BR>
+				</P>
+			</TD>
+			<TD WIDTH=20%>
+				<P><BR>
+				</P>
+			</TD>
+			<TD WIDTH=40%>
+				<P><BR>
+				</P>
+			</TD>
+		</TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=20%>
+				<P>SubProjects</P>
+			</TD>
+			<TD WIDTH=20%>
+				<P><BR>
+				</P>
+			</TD>
+			<TD WIDTH=20%>
+				<P><BR>
+				</P>
+			</TD>
+			<TD WIDTH=40%>
+				<P><BR>
+				</P>
+			</TD>
+		</TR>
+		<TR VALIGN=TOP>
+			<TD WIDTH=20%>
+				<P>GNUstepWeb</P>
+			</TD>
+			<TD WIDTH=20%>
+				<P><BR>
+				</P>
+			</TD>
+			<TD WIDTH=20%>
+				<P><BR>
+				</P>
+			</TD>
+			<TD WIDTH=40%>
+				<P><BR>
+				</P>
+			</TD>
+		</TR>
+	</TBODY>
+</TABLE>
+<P><BR><BR>
 </P>
 <H2>What doesn't work.</H2>
 <P>Not all targets are accepted., and invalid targets usually do not
@@ -85,14 +204,13 @@ raise an error.</P>
 <P>Due to some as of yet undetermined bug in NSTask, a call to sleep
 takes place after each call to launch. This is to avoid choking on 
 </P>
+<P>If a PB.project lists itself or a non-existant directory as a
+subproject, and infinite loop of building occurs.</P>
 <P>Nfmake assumes xgps.</P>
 <P>The code is very gross. It was quickly put together and is still
 being worked on.</P>
-<P></tr></td>
-</table>
-<font size=-1>Send questions or comments to <a href="mailto:karl@nfox.com">Karl Kraft</a></font>
-</BODY>
-</HTML>
+<P><FONT SIZE=2>Send questions or comments to <A HREF="mailto:karl@nfox.com">Karl
+Kraft</A></FONT> 
 </P>
 </BODY>
 </HTML>

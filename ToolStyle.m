@@ -21,12 +21,23 @@
    Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
+/*
+ *  A tool style is used for building command line tools
+ *  
+ *  Example build tree
+ *  
+ *  ls
+ *  Resources/ls/
+ *  Resource/ls/ls.help
+ */
+ 
 #import <unistd.h>
 
 #import "ToolStyle.h"
 #import "NSFileManager_CompareFiles.h"
 
 @implementation ToolStyle
+
 +(BOOL)buildsType:(NSString *)aType;
 {
   if ([aType isEqualToString:@"Tool"]) {
@@ -36,14 +47,20 @@
 }
 
 // unlike all other packages, a tool does not come is a wrapper
+// IMHO - it should
 - (NSString *)executablePath;
 {
   return [[self outputDirectory] stringByAppendingPathComponent:[self projectName]];
 }
 
+
+// We place tool 
 -(NSString *)resourcePath;
 {
-  return [[self outputDirectory] stringByAppendingPathComponent:@"Resources"];
+  NSString *tmpString = [self outputDirectory];
+  tmpString=[tmpString stringByAppendingPathComponent:@"Resources"];
+  tmpString=[tmpString stringByAppendingPathComponent:[self projectName]];
+  return tmpString;
 }
 
 
@@ -64,7 +81,8 @@
   [arguments addObject:@"-o"];
   [arguments addObject:[self executablePath]];
   [arguments addObjectsFromArray:[self linkables]];
-  [arguments addObject:@"-L/usr/GNUstep/Libraries/machine/"];
+  [arguments addObjectsFromArray:[self libraryDirectoryFlags]];
+
   
   [arguments addObject:[NSString stringWithFormat:@"-L%@",[self systemSharedLibraryDirectory]]];
 
@@ -83,9 +101,26 @@
   }
 }
 
-- (NSString *)finalExecutablePath;
+- (NSString *) installDirectory;
 {
-  return [[self systemExecutableDirectory] stringByAppendingPathComponent:[self projectName]];
+  NSString *aString = [super installDirectory];
+  if (aString) return aString;
+  // TODO - get from environment
+  return @"/usr/GNUstep/Local/Tools";
+}
+
+- (NSString *)installedExecutablePath;
+{
+  return [[self installDirectory] stringByAppendingPathComponent:[self projectName]];
+}
+
+- (NSString *)installedResourcePath;
+{
+  NSString *aString=[self installDirectory];
+  aString=[aString stringByAppendingPathComponent:@"Reources"];
+  aString=[aString stringByAppendingPathComponent:[self projectName]];
+  return aString;
+  
 }
 
 
@@ -94,10 +129,10 @@
   NSTask *aTask = [[[NSTask alloc] init] autorelease];
   NSMutableArray *arguments= [NSMutableArray array];
   
-  fprintf(stdout,"Installing %s to %s\n",[[self executablePath] cString],[[self systemExecutableDirectory] cString]); fflush(stdout);
+  fprintf(stdout,"Installing %s to %s\n",[[self executablePath] cString],[[self installedExecutablePath] cString]); fflush(stdout);
   [arguments addObject:@"-D"];
   [arguments addObject:[self executablePath]];
-  [arguments addObject:[self systemExecutableDirectory]];
+  [arguments addObject:[self installedExecutablePath]];
   [aTask setLaunchPath:@"install"];
   [aTask setArguments:arguments];
   [aTask setEnvironment:[self subTaskEnvironment]];
@@ -107,8 +142,27 @@
   if ([aTask terminationStatus]!=0) {
     fprintf(stderr,"Abort\n");
     exit([aTask terminationStatus]);
-  } else {
   }
+
+  aTask = [[[NSTask alloc] init] autorelease];
+  arguments= [NSMutableArray array];
+  fprintf(stdout,"Installing %s to %s\n",[[self resourcePath] cString],[[self installedResourcePath] cString]); fflush(stdout);
+  [arguments addObject:@"-d"];
+  [arguments addObject:@"-D"];
+  [arguments addObject:[self resourcePath]];
+  [arguments addObject:[self installedResourcePath]];
+  [aTask setLaunchPath:@"install"];
+  [aTask setArguments:arguments];
+  [aTask setEnvironment:[self subTaskEnvironment]];
+  [aTask launch];
+  //sleep (30);
+  [aTask waitUntilExit];
+  if ([aTask terminationStatus]!=0) {
+    fprintf(stderr,"Abort\n");
+    exit([aTask terminationStatus]);
+  }
+
+  
 }
 
 
