@@ -107,7 +107,7 @@ return [[self buildComponentDirectory] stringByAppendingPathComponent:[self comp
     installDirectory = @"/usr/GNUstep/Local/Components";
   }
 
-  fprintf(stdout,"Installing to %s\n",[installDirectory cString]);
+ // fprintf(stdout,"Installing to %s\n",[installDirectory cString]);
   [theMan installFromPath:[self componentPath] 
                     toDir:installDirectory
         operationDelegate:[self copyDelegate]];

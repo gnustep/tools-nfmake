@@ -83,7 +83,7 @@
 {
   id theMan=[NSFileManager defaultManager];
 
-  fprintf(stdout,"Installing to %s\n",[[self buildComponentDirectory] cString]);
+  // fprintf(stdout,"Installing to %s\n",[[self buildComponentDirectory] cString]);
   [theMan installFromPath:[self componentPath] 
                     toDir:[self buildComponentDirectory]
         operationDelegate:[self copyDelegate]];

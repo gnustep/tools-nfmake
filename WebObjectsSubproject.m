@@ -48,9 +48,20 @@
   // [parentProject filesTable] objectForKey:@"WEBSERVER_RESOURCES"];
 }
 
+- (NSString *)pathFromBase;
+{
+  NSString *myPath = [self baseDirectoryPath];
+  NSString *basePath=[[self baseProject] baseDirectoryPath];
+  if ([myPath hasPrefix:basePath]) {
+   myPath=[myPath substringFromIndex:[basePath length]+1];
+  }
+  return myPath;
+}
+
 -(void)makeTarget:(NSString *)targetName;
 {
-  fprintf(stdout,"Building %s\n",[[self projectName] cString]);
+  fprintf(stdout,"  =subproject %s\n",[[self pathFromBase] cString]);
+  //fprintf(stdout,"Building %s\n",[[self projectName] cString]);
   fflush(stdout);
   if ([targetName isEqualToString:@"default"]) {
     [self installResources];

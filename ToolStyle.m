@@ -132,12 +132,12 @@
   NSFileManager *theMan=[NSFileManager defaultManager];
 
 
-  fprintf(stdout,"Installing %s\n",[[self installedExecutablePath] cString]);
+  // fprintf(stdout,"Installing %s\n",[[self installedExecutablePath] cString]);
   [theMan installFromPath:[self executablePath] 
                     toDir:[self installDirectory] 
         operationDelegate:[self copyDelegate]];
 
-  fprintf(stdout,"Installing %s\n",[[self installedResourcePath] cString]);
+  //fprintf(stdout,"Installing %s\n",[[self installedResourcePath] cString]);
   [theMan installFromPath:[self resourcePath] 
                     toDir:[self installedResourceDirectory] 
         operationDelegate:[self copyDelegate]];

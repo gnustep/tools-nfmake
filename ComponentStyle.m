@@ -48,7 +48,7 @@
 
 -(void)makeTarget:(NSString *)targetName;
 {
-  fprintf(stdout,"===subproject %s\n",[[self pathFromBase] cString]);
+  fprintf(stdout,"  =subproject %s\n",[[self pathFromBase] cString]);
   fflush(stdout);
   if ([targetName isEqualToString:@"InstallHeaders"]) {
     [self installHeaders];
