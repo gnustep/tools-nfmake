@@ -113,7 +113,7 @@
 - (NSString *)installedResourceDirectory;
 {
   NSString *aString=[self installDirectory];
-  aString=[aString stringByAppendingPathComponent:@"Reources"];
+  aString=[aString stringByAppendingPathComponent:@"Resources"];
   return aString;
   
 }
