@@ -1,0 +1,19 @@
+I've just gotten nfmake working for use with prc-tool chain used in
+building palm software.  This allows you to build C code using the
+prc-tool chain and nfmake.  I did this because the first project I came
+across used rm(1) for deleting build products, and due to a bug in the
+makefile blew away the root on a windows box I was working on.
+
+Eventually this should make it usable for building Objective-C projects
+on palm and compatible platforms.  For now it is limited to building pure
+C code.  Due to oddities in the prc-tool (build-prc in particular) chain,
+the project does not build like normal PB.project tools or applications.
+The PalmApplication.m class is just a first stab and should be cleaned
+up later.
+
+Projects build with debugging symbols and can be debugged using
+poser/Emulator and m68k-palmos-gdb with good success.
+
+A sample project that uses PB.project and nfmake can be found at
+http://distro.nfox.com/pub/nfmake/palm_tutorial.tar.gz
+
