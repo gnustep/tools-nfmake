@@ -567,13 +567,13 @@
 {
   id baseDict = [[NSProcessInfo processInfo] environment];
 
-  if ([[baseDict objectForKey: @"GNUSTEP_FLATTENED"] isEqualToString: @"yes"])
+  if ([[baseDict objectForKey: @"GNUSTEP_IS_FLATTENED"] isEqualToString: @"no"])
     {
-      return YES;
+      return NO;
     }
   else
     {
-      return NO;
+      return YES;
     }
 }
 

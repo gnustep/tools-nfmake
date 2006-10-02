@@ -1,0 +1,5 @@
+2006-10-02  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* PBProject.m ([PBProject -gnustepFlattened]): Replace
+	GNUSTEP_FLATTENED with GNUSTEP_IS_FLATTENED and change
+	default value from 'no' to 'yes'.
